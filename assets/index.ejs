@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+
+<head>
+  <title>Rainway Stream SDK Sandbox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100%;
+      overflow: hidden;
+      padding: 0;
+      margin: 0;
+    }
+
+    div.h100 {
+      height: 100%;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: #dddddd;
+    }
+
+    .build-info {
+      float: right;
+    }
+
+    .page-container {
+      background: #eeeeee;
+      height: 100%;
+      max-width: 1600px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0.5em 1em;
+    }
+
+    .stream-wrapper {
+      min-height: 300px;
+      background: #dddddd;
+    }
+
+    pre {
+      font-size: 75%;
+      background: #ffeecc;
+      font-family: "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+      overflow-x: scroll;
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .setting-name {
+      font-weight: bold;
+    }
+
+    .page-container>div {
+      margin-top: 1em;
+    }
+
+    .output-modes>div {
+      display: inline-block;
+    }
+
+    div.interactive {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .stream-column {
+      flex: 1;
+    }
+
+    .stream-controls {
+      display: flex;
+      align-items: center;
+    }
+
+    .stream-controls>h2~* {
+      margin-inline-start: 10px;
+    }
+
+    .chat-column {
+      width: 20em;
+      margin-inline-start: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-history {
+      border: 1px solid rgb(0, 0, 0, 0.4);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .chat-bottom {
+      display: flex;
+    }
+
+    .chat-bottom input {
+      flex: 1;
+    }
+
+    .chat-history p {
+      margin: 0;
+    }
+
+    .chat-history p span {
+      font-weight: bold;
+    }
+
+    .chat-info {
+      opacity: 0.5;
+    }
+
+    .rainway-inner-container:focus {
+      /* This is a bad idea: http://www.outlinenone.com/ */
+      /* But the default obscures the stream a bit. In practice we should restyle it */
+      outline: none;
+    }
+
+    .widget {
+      background-color: rgb(0, 0, 0, 0.03);
+      padding: 1em;
+    }
+
+    .widget+.widget {
+      margin-top: 1em;
+    }
+
+    @media only screen and (max-width: 640px) {
+      h1 {
+        font-size: 22px;
+      }
+
+      .stream-controls {
+        flex-direction: column !important;
+        align-items: inherit !important;
+      }
+
+      .build-info {
+        float: none !important;
+      }
+
+      div.interactive {
+        flex-direction: column !important;
+      }
+
+      body,
+      div.h100,
+      body,
+      .page-container {
+        height: auto !important;
+        overflow: auto !important;
+      }
+
+      .page-container,
+      .widget-header {
+        display: flex;
+        flex-direction: column;
+      }
+
+      button {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>
+    <p>This application requires JavaScript.</p>
+  </noscript>
+  <div class="h100">
+    <div class="page-container">
+      <h1>Rainway SDK Web Sandbox</h1>
+      <p class="build-info">Built at <%= __BUILD_DATE__ %> from commit <%= __BUILD_COMMIT__ %>
+      </p>
+      <label class="setting-name" for="hostname">API Key:</label>
+      <input size="40" class="api-key" type="text" />
+      <br>
+      <button class="when-no-relay connect-to-relay-button">Connect to Relay</button>
+      <button class="when-relay disconnect-from-relay-button" disabled>Disconnect from Relay</button>
+      <span class="rainway-outer-state">Disconnected</span>
+      <br>
+      <button onclick="localStorage.clear();console.log('cleared')">Clear LocalStorage</button>
+      <div class="widgets"></div>
+
+      <h2 hidden>Logs</h2>
+      <pre class="rainway-logs" hidden></pre>
+    </div>
+  </div>
+
+  <template class="widget">
+    <div>
+      <div class="widget-header">
+        <label class="setting-name" for="hostname">Hostname:</label>
+        <input size="40" class="when-stopped hostname" type="text" />
+        <br>
+        <button disabled class="when-no-host connect-to-host-button">Connect to Host</button>
+        <button disabled class="when-host-or-connecting disconnect-from-host-button">Disconnect from Host</button>
+        <button disabled class="when-streaming fullscreen-button">Fullscreen</button>
+        <button disabled class="when-streaming pause-button">Pause</button>
+        <button disabled class="when-streaming stats-button">Show stats</button>
+      </div>
+      <div class="output-modes" hidden>
+        <div class="setting-name">Output mode:</div>
+        <div><label><input type="radio" name="output-mode" value="auto" checked />Automatic</label></div>
+        <div><label><input type="radio" name="output-mode" value="mse" />MSE</label></div>
+        <div><label><input type="radio" name="output-mode" value="software" />Software</label></div>
+      </div>
+      <div class="interactive">
+        <div class="stream-column">
+          <div class="stream-controls">
+            <h2>Stream</h2>
+            <button disabled class="when-ready-to-stream start-stream-button">Start Stream</button>
+            <button disabled class="when-streaming stop-stream-button">Stop Stream</button>
+            <span class="rainway-client-state">Disconnected</span>
+          </div>
+          <div class="stream-wrapper">
+            <div class="stream-container">
+            </div>
+          </div>
+        </div>
+        <div class="chat-column">
+          <h2>Chat</h2>
+          <div class="chat-history">
+            <p class="chat-info">Chat messages will show up here.</p>
+          </div>
+          <div class="chat-bottom">
+            <input disabled class="when-host chat-input" type="text">
+            <button disabled class="when-host chat-send-button" type=submit>Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+</body>
+
+</html>

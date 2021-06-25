@@ -1,0 +1,10 @@
+{
+    "host": "instantrelay.rainway.com",
+    "port": "443",
+    "input": true,
+    "logVideoStats": false,
+    "logTransportStats": false,
+    "rainwayLogsInConsole": true,
+    "minimumLogLevel": 1,
+    "apiKey": "..."
+}

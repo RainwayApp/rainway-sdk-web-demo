@@ -1,0 +1,11 @@
+canvas { display: inline-block; }
+
+pre.rainway-logs {
+    font-size: 12px;
+    height: 10em;
+    resize: vertical;
+    background-color: #ffffdd;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    padding: 5px;
+    overflow-y: scroll;
+}
