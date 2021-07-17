@@ -3,3 +3,5 @@ public
 ssl/*
 !ssl/.keep
 local-config.json
+public
+public.zip
