@@ -2,7 +2,7 @@
 <html lang="en" style="height: 100%">
 
 <head>
-  <title>Rainway Stream SDK Sandbox</title>
+  <title>Rainway Demo App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
@@ -40,6 +40,7 @@
 
     .stream-wrapper {
       min-height: 300px;
+      display: flex;
       background: #dddddd;
     }
 
@@ -177,7 +178,7 @@
   </noscript>
   <div class="h100">
     <div class="page-container">
-      <h1>Rainway SDK Web Sandbox</h1>
+      <h1>Rainway Demo App</h1>
       <p class="build-info">Built at <%= __BUILD_DATE__ %> from commit <%= __BUILD_COMMIT__ %>
       </p>
       <label class="setting-name" for="hostname">API Key:</label>
@@ -222,8 +223,6 @@
             <span class="rainway-client-state">Disconnected</span>
           </div>
           <div class="stream-wrapper">
-            <div class="stream-container">
-            </div>
           </div>
         </div>
         <div class="chat-column">
