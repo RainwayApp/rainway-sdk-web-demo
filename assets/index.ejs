@@ -218,9 +218,11 @@
       </div>
       <!--<p class="build-info">Built at <%= __BUILD_DATE__ %> from commit <%= __BUILD_COMMIT__ %>-->
       </p>
-      <label class="setting-name" for="hostname">API Key:</label>
-      <input size="40" class="api-key" type="text" />
-      <br>
+      <div hidden>
+        <label class="setting-name" for="hostname">API Key:</label>
+        <input size="40" class="api-key" type="text" value="pk_live_dGOuI0XsCP7BjMD3LaCS0bpX" />
+        <br>
+      </div>
       <button class="when-no-relay connect-to-relay-button">Connect to Relay</button>
       <button class="when-relay disconnect-from-relay-button" disabled>Disconnect from Relay</button>
       <span class="rainway-outer-state">Disconnected</span>
@@ -236,9 +238,11 @@
   <template class="widget">
     <div>
       <div class="widget-header">
-        <label class="setting-name" for="hostname">Hostname:</label>
-        <input size="40" class="when-stopped hostname" type="text" />
-        <br>
+        <div hidden>
+          <label class="setting-name" for="hostname">Hostname:</label>
+          <input size="40" class="when-stopped hostname" type="text" />
+          <br>
+        </div>
         <button disabled class="when-no-host connect-to-host-button">Connect to Host</button>
         <button disabled class="when-host-or-connecting disconnect-from-host-button">Disconnect from Host</button>
         <button disabled class="when-streaming fullscreen-button">Fullscreen</button>

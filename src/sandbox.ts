@@ -44,7 +44,7 @@ class StreamWidget {
     chatHistory: HTMLDivElement;
     chatInput: HTMLInputElement;
     chatSendButton: HTMLButtonElement;
-    
+
 
     private getElement = <T extends HTMLElement>(className: string) =>
         document.querySelector(`.${this.widgetClassName} .${className}`)! as T;
@@ -105,9 +105,7 @@ class StreamWidget {
 
         // Populate hostname from config, then localStorage, and finally default to "608f3a6b-0100-0000-0000-000000000000"
         this.hostname.value =
-            config.hostname ??
-            localStorage.getItem("hostname-" + widgetClassName) ??
-            "608f3a6b-0100-0000-0000-000000000000";
+            new URLSearchParams(window.location.search).get("hostname") ?? "error: no ?hostname= in URL";
 
         // Persist hostname to localStorage for convenience
         this.hostname.addEventListener("change", () => {
@@ -372,7 +370,7 @@ export class StreamSandbox {
         const descriptions = {
             [S.Disconnected]: "Disconnected",
             [S.ConnectingToRelay]: "Connecting...",
-            [S.ConnectedToRelay]: "Connected to relay as " + this.runtime?.getHostname(),
+            [S.ConnectedToRelay]: "Connected",
         };
         this.querySelector(".rainway-outer-state")!.innerText = descriptions[newState];
 
