@@ -3037,10 +3037,10 @@ querystringify@^2.1.1:
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.2.0.tgz#3345941b4153cb9d082d8eee4cda2016a9aef7f6"
   integrity sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==
 
-rainway-sdk@0.1.4-rc:
-  version "0.1.4-rc"
-  resolved "https://registry.yarnpkg.com/rainway-sdk/-/rainway-sdk-0.1.4-rc.tgz#73772925566a1e4245e0250aa9772748d2bd8687"
-  integrity sha512-ASByl5qxomEubUM8pSp6RZScbQ4yHqOzUmQPRjSHx1TIcJ7RQ50ndW9iDJY74V6dJEJajsA6qAT61AHvDi3kBA==
+rainway-sdk@0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/rainway-sdk/-/rainway-sdk-0.1.4.tgz#6da1b0a03b99de6e3015cf772fcd03462698d7b0"
+  integrity sha512-fuIBFGpwnLuvG0VtmYOiaNE8qVVp6c+gO5C5AWvZIDp92DM7cBWNem4PYni+Xtk1QjwuD6Fvhogm0t6MwB42Cw==
 
 randombytes@^2.1.0:
   version "2.1.0"
