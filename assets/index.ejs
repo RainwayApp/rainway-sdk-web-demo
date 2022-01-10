@@ -184,8 +184,8 @@
       <label class="setting-name" for="hostname">API Key:</label>
       <input size="40" class="api-key" type="text" />
       <br>
-      <button class="when-no-relay connect-to-relay-button">Connect to Relay</button>
-      <button class="when-relay disconnect-from-relay-button" disabled>Disconnect from Relay</button>
+      <button class="when-no-relay connect-to-relay-button">Connect to Gateway</button>
+      <button class="when-relay disconnect-from-relay-button" disabled>Disconnect from Gateway</button>
       <span class="rainway-outer-state">Disconnected</span>
       <br>
       <button onclick="localStorage.clear();console.log('cleared')">Clear LocalStorage</button>
@@ -199,11 +199,11 @@
   <template class="widget">
     <div>
       <div class="widget-header">
-        <label class="setting-name" for="hostname">Hostname:</label>
+        <label class="setting-name" for="hostname">Peer Id:</label>
         <input size="40" class="when-stopped hostname" type="text" />
         <br>
-        <button disabled class="when-no-host connect-to-host-button">Connect to Host</button>
-        <button disabled class="when-host-or-connecting disconnect-from-host-button">Disconnect from Host</button>
+        <button disabled class="when-no-host connect-to-host-button">Connect to Peer</button>
+        <button disabled class="when-host-or-connecting disconnect-from-host-button">Disconnect from Peer</button>
         <button disabled class="when-streaming fullscreen-button">Fullscreen</button>
         <button disabled class="when-streaming pause-button">Pause</button>
         <button disabled class="when-streaming stats-button">Show stats</button>

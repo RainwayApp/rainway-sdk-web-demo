@@ -107,7 +107,7 @@ class StreamWidget {
         this.hostname.value =
             config.hostname ??
             localStorage.getItem("hostname-" + widgetClassName) ??
-            "608f3a6b-0100-0000-0000-000000000000";
+            "000000000000000000";
 
         // Persist hostname to localStorage for convenience
         this.hostname.addEventListener("change", () => {
@@ -170,11 +170,11 @@ class StreamWidget {
     /** Connect to a stream hosting-capable peer. Will connect parent runtime to instant relay first if not connected. */
     async connectToHost(): Promise<void> {
         if (this.runtime === undefined) throw new Error();
-        await this.runtime.connectToRelay();
+        await this.runtime.connectToGateway();
 
         this.setUIState(SandboxWidgetState.ConnectingToHost);
         try {
-            this.peer = await this.runtime.connect(this.hostname.value);
+            this.peer = await this.runtime.connect(BigInt(this.hostname.value));
         } catch (e) {
             this.setUIState(SandboxWidgetState.Disconnected);
             this.showError(e);
@@ -194,7 +194,7 @@ class StreamWidget {
 
         this.setUIState(SandboxWidgetState.Disconnected);
         if (this.peer === undefined) {
-            this.runtime.cancelConnectionAttempt(this.hostname.value);
+            this.runtime.cancelConnectionAttempt(BigInt(this.hostname.value));
             return;
         }
         this.peer.disconnect();
@@ -303,7 +303,7 @@ export class StreamSandbox {
         if (!this.runtime) {
             this.runtime = await RainwayRuntime.initialize({
                 apiKey: sandboxApiKey,
-                externalId: "sandbox",
+                externalId: "web-sdk-demo-sandbox",
                 // Listener for instant relay connection loss
                 onRuntimeConnectionLost: (error) => {
                     console.log("Connection lost:", error);
@@ -355,7 +355,7 @@ export class StreamSandbox {
             });
         }
         // This call is not strictly necessary if the runtime was just constructed:
-        await this.runtime.connectToRelay();
+        await this.runtime.connectToGateway();
         // The runtime automatically connects to instant relay when initialized.
         this.setUIState(SandboxState.ConnectedToRelay);
         if (this.widgets.length === 0) {
@@ -372,7 +372,7 @@ export class StreamSandbox {
         const descriptions = {
             [S.Disconnected]: "Disconnected",
             [S.ConnectingToRelay]: "Connecting...",
-            [S.ConnectedToRelay]: "Connected to relay as " + this.runtime?.getHostname(),
+            [S.ConnectedToRelay]: "Connected to Gateway as " + this.runtime?.getPeerId(),
         };
         this.querySelector(".rainway-outer-state")!.innerText = descriptions[newState];
 
@@ -384,7 +384,7 @@ export class StreamSandbox {
 
     /** Disconnect from instant relay. Runtime can be reconnected later. */
     async disconnectFromRelay() {
-        this.runtime?.disconnectFromRelay();
+        this.runtime?.disconnectFromGateway();
         this.setUIState(SandboxState.Disconnected);
     }
 }
