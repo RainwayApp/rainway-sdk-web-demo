@@ -37,7 +37,7 @@ class StreamWidget {
     peer: RainwayPeer | undefined;
     stream: RainwayStream | undefined;
     state: SandboxWidgetState = SandboxWidgetState.Disconnected;
-    hostname: HTMLInputElement;
+    peerId: HTMLInputElement;
     fullscreenButton: HTMLButtonElement;
     pauseButton: HTMLButtonElement;
     statsButton: HTMLButtonElement;
@@ -52,7 +52,7 @@ class StreamWidget {
     constructor(private runtime: RainwayRuntime, private widgetClassName: string) {
         // Bind some DOM elements and set up listeners
 
-        this.hostname = this.getElement("hostname");
+        this.peerId = this.getElement("peerId");
         this.fullscreenButton = this.getElement("fullscreen-button");
         this.pauseButton = this.getElement("pause-button");
         this.statsButton = this.getElement("stats-button");
@@ -103,15 +103,15 @@ class StreamWidget {
             this.stream?.leave();
         });
 
-        // Populate hostname from config, then localStorage, and finally default to "608f3a6b-0100-0000-0000-000000000000"
-        this.hostname.value =
-            config.hostname ??
-            localStorage.getItem("hostname-" + widgetClassName) ??
+        // Populate peerId from config, then localStorage, and finally default to "000000000000000000"
+        this.peerId.value =
+            config.peerId ??
+            localStorage.getItem("peerId-" + widgetClassName) ??
             "000000000000000000";
 
-        // Persist hostname to localStorage for convenience
-        this.hostname.addEventListener("change", () => {
-            localStorage.setItem("hostname-" + widgetClassName, this.hostname.value);
+        // Persist peerId to localStorage for convenience
+        this.peerId.addEventListener("change", () => {
+            localStorage.setItem("peerId-" + widgetClassName, this.peerId.value);
         });
 
         this.getElement("connect-to-host-button").addEventListener("click", (e) =>
@@ -157,9 +157,9 @@ class StreamWidget {
         }
     }
 
-    /** Short version of hostname. */
+    /** Short version of peerId. */
     public hostNickname(): string {
-        return this.hostname.value.substring(29);
+        return this.peerId.value.substring(29);
     }
 
     private showError(e: any): void {
@@ -174,7 +174,7 @@ class StreamWidget {
 
         this.setUIState(SandboxWidgetState.ConnectingToHost);
         try {
-            this.peer = await this.runtime.connect(BigInt(this.hostname.value));
+            this.peer = await this.runtime.connect(BigInt(this.peerId.value));
         } catch (e) {
             this.setUIState(SandboxWidgetState.Disconnected);
             this.showError(e);
@@ -194,7 +194,7 @@ class StreamWidget {
 
         this.setUIState(SandboxWidgetState.Disconnected);
         if (this.peer === undefined) {
-            this.runtime.cancelConnectionAttempt(BigInt(this.hostname.value));
+            this.runtime.cancelConnectionAttempt(BigInt(this.peerId.value));
             return;
         }
         this.peer.disconnect();

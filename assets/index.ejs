@@ -4,172 +4,6 @@
 <head>
   <title>Rainway Demo App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      height: 100%;
-      overflow: hidden;
-      padding: 0;
-      margin: 0;
-    }
-
-    div.h100 {
-      height: 100%;
-    }
-
-    body {
-      font-family: sans-serif;
-      background: #dddddd;
-    }
-
-    .build-info {
-      float: right;
-    }
-
-    .page-container {
-      background: #eeeeee;
-      height: 100%;
-      max-width: 1600px;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 0.5em 1em;
-    }
-
-    .stream-wrapper {
-      min-height: 300px;
-      display: flex;
-      background: #dddddd;
-    }
-
-    pre {
-      font-size: 75%;
-      background: #ffeecc;
-      font-family: "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
-      overflow-x: scroll;
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .setting-name {
-      font-weight: bold;
-    }
-
-    .page-container>div {
-      margin-top: 1em;
-    }
-
-    .output-modes>div {
-      display: inline-block;
-    }
-
-    div.interactive {
-      display: flex;
-      align-items: stretch;
-    }
-
-    .stream-column {
-      flex: 1;
-    }
-
-    .stream-controls {
-      display: flex;
-      align-items: center;
-    }
-
-    .stream-controls>h2~* {
-      margin-inline-start: 10px;
-    }
-
-    .chat-column {
-      width: 20em;
-      margin-inline-start: 10px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .chat-history {
-      border: 1px solid rgb(0, 0, 0, 0.4);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
-
-    .chat-bottom {
-      display: flex;
-    }
-
-    .chat-bottom input {
-      flex: 1;
-    }
-
-    .chat-history p {
-      margin: 0;
-    }
-
-    .chat-history p span {
-      font-weight: bold;
-    }
-
-    .chat-info {
-      opacity: 0.5;
-    }
-
-    .rainway-inner-container:focus {
-      /* This is a bad idea: http://www.outlinenone.com/ */
-      /* But the default obscures the stream a bit. In practice we should restyle it */
-      outline: none;
-    }
-
-    .widget {
-      background-color: rgb(0, 0, 0, 0.03);
-      padding: 1em;
-    }
-
-    .widget+.widget {
-      margin-top: 1em;
-    }
-
-    @media only screen and (max-width: 640px) {
-      h1 {
-        font-size: 22px;
-      }
-
-      .stream-controls {
-        flex-direction: column !important;
-        align-items: inherit !important;
-      }
-
-      .build-info {
-        float: none !important;
-      }
-
-      div.interactive {
-        flex-direction: column !important;
-      }
-
-      body,
-      div.h100,
-      body,
-      .page-container {
-        height: auto !important;
-        overflow: auto !important;
-      }
-
-      .page-container,
-      .widget-header {
-        display: flex;
-        flex-direction: column;
-      }
-
-      button {
-        font-size: 16px;
-      }
-    }
-  </style>
 </head>
 
 <body>
@@ -181,8 +15,8 @@
       <h1>Rainway Demo App</h1>
       <p class="build-info">Built at <%= __BUILD_DATE__ %> from commit <%= __BUILD_COMMIT__ %>
       </p>
-      <label class="setting-name" for="hostname">API Key:</label>
-      <input size="40" class="api-key" type="text" />
+      <label class="setting-name" for="api-key">API Key:</label>
+      <input size="40" class="api-key" id="api-key" type="text" />
       <br>
       <button class="when-no-relay connect-to-relay-button">Connect to Gateway</button>
       <button class="when-relay disconnect-from-relay-button" disabled>Disconnect from Gateway</button>
@@ -199,8 +33,8 @@
   <template class="widget">
     <div>
       <div class="widget-header">
-        <label class="setting-name" for="hostname">Peer Id:</label>
-        <input size="40" class="when-stopped hostname" type="text" />
+        <label class="setting-name" for="peer-id">Peer Id:</label>
+        <input size="40" class="when-stopped peer-id" id="peer-id" type="text" />
         <br>
         <button disabled class="when-no-host connect-to-host-button">Connect to Peer</button>
         <button disabled class="when-host-or-connecting disconnect-from-host-button">Disconnect from Peer</button>
