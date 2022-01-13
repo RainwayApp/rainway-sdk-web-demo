@@ -6,6 +6,7 @@ import {
     RainwayRuntime,
     InputLevel,
 } from "rainway-sdk";
+import { consoleLog } from "shared";
 
 let config: any = {};
 try {
@@ -52,7 +53,7 @@ class StreamWidget {
     constructor(private runtime: RainwayRuntime, private widgetClassName: string) {
         // Bind some DOM elements and set up listeners
 
-        this.peerId = this.getElement("peerId");
+        this.peerId = this.getElement("peer-id");
         this.fullscreenButton = this.getElement("fullscreen-button");
         this.pauseButton = this.getElement("pause-button");
         this.statsButton = this.getElement("stats-button");
@@ -106,12 +107,12 @@ class StreamWidget {
         // Populate peerId from config, then localStorage, and finally default to "000000000000000000"
         this.peerId.value =
             config.peerId ??
-            localStorage.getItem("peerId-" + widgetClassName) ??
+            localStorage.getItem("peer-id-" + widgetClassName) ??
             "000000000000000000";
 
         // Persist peerId to localStorage for convenience
         this.peerId.addEventListener("change", () => {
-            localStorage.setItem("peerId-" + widgetClassName, this.peerId.value);
+            localStorage.setItem("peer-id-" + widgetClassName, this.peerId.value);
         });
 
         this.getElement("connect-to-host-button").addEventListener("click", (e) =>
@@ -270,22 +271,9 @@ export class StreamSandbox {
         this.rainwayLogsInConsole = config.rainwayLogsInConsole ?? true;
     }
 
-    /** Log to web console based on Rainway log level. */
-    private consoleLog(level: RainwayLogLevel, message: string): void {
-        if (level >= RainwayLogLevel.Error) {
-            console.error(message);
-        } else if (level >= RainwayLogLevel.Warning) {
-            console.warn(message);
-        } else if (level >= RainwayLogLevel.Information) {
-            console.info(message);
-        } else {
-            console.log(message);
-        }
-    }
-
     private handleLog = (level: RainwayLogLevel, message: string): void => {
         if (level >= this.minimumLogLevel) {
-            this.consoleLog(level, message);
+            consoleLog(level, message);
         }
     };
 
