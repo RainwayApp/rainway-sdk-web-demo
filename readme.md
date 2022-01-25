@@ -1,5 +1,5 @@
 # Rainway SDK Web Runtime Demo
-Sandbox/example app to be used for testing and experimenting with the Rainway SDK.
+Example app to be used for testing and experimenting with the Rainway SDK.
 
 Check out our documentation at https://docs.rainway.com.
 
@@ -12,4 +12,4 @@ To get started:
 
 Or 
 
-Visit the hosted version [here](https://sdk-builds.rainway.com/demos/web/sandbox/).
+Visit the hosted version [here](https://sdk-builds.rainway.com/demos/web/).
