@@ -115,11 +115,11 @@ class StreamWidget {
             this.stream?.leave();
         });
 
-        // Populate peerId from config, then localStorage, and finally default to "555555555123456789"
+        // Populate peerId from config, then localStorage, and finally default to "000000000000000000"
         this.peerId.value =
             config.peerId ??
             localStorage.getItem("peerId-" + widgetClassName) ??
-            "555555555123456789";
+            "000000000000000000";
 
         // Persist peerId to localStorage for convenience
         this.peerId.addEventListener("change", () => {
@@ -350,7 +350,7 @@ export class StreamSandbox {
         if (!this.runtime) {
             this.runtime = await RainwayRuntime.initialize({
                 apiKey: sandboxApiKey,
-                externalId: "web runtime sandbox",
+                externalId: "rainway sdk web demo",
                 // Listener for Gateway connection loss
                 onRuntimeConnectionLost: (error) => {
                     console.log("Connection lost:", error);
