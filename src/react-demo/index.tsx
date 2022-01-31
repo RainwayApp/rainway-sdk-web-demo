@@ -26,12 +26,15 @@ const Demo = () => {
   const [apiKey, setApiKey] = useLocalStorage("api-key", "NO_KEY");
   const [uiState, setUIState] = useState(SandboxState.Disconnected);
   const [runtime, setRuntime] = useState<RainwayRuntime | undefined>();
-  const [currentStream, setStream] = useState<RainwayStream | undefined>();
   const [peers, setPeers] = useState<MaybePeer[]>([]);
 
   // This "peerId" string is the value for the connect prompt.
-  const [peerId, setPeerId] = useLocalStorage<string>("peerId-widget1", "00000");
+  const [peerId, setPeerId] = useLocalStorage<string>(
+    "peerId-widget1",
+    "00000",
+  );
   const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState("");
 
   /** Instantiate runtime if not yet built, connect it to instant relay. */
   const connectToRelay = async (): Promise<void> => {
@@ -46,7 +49,6 @@ const Demo = () => {
           console.log("Connection lost:", error);
           setUIState(SandboxState.Disconnected);
           setPeers([]);
-          setStream(undefined);
         },
         onConnectionRequest: (request) => {
           // Auto-accept every request.
@@ -75,7 +77,7 @@ const Demo = () => {
           // Don't do anything when a peer announces a stream (currently)
         },
         onStreamStop: (stream) => {
-          setStream(undefined);
+          // TODO cause widgets to check and drop stream
         },
         logSink: (level, message) => consoleLog(level, message),
       });
@@ -91,7 +93,7 @@ const Demo = () => {
 
   return (
     <div className="page-container">
-      <label htmlFor="apiKey">API key</label>
+      <label htmlFor="apiKey">API key</label>{" "}
       <input
         id="apiKey"
         type="text"
@@ -99,14 +101,13 @@ const Demo = () => {
         onChange={(e) => setApiKey(e.target.value)}
       />
       <br />
-      {SandboxState[uiState]}
-      <br />
       <button
         disabled={uiState !== SandboxState.Disconnected}
         onClick={connectToRelay}
       >
         Connect
-      </button>
+      </button>{" "}
+      {SandboxState[uiState]}
       <br />
       <label htmlFor="peerId">Peer ID</label>
       <input
@@ -124,16 +125,18 @@ const Demo = () => {
             const peer = await runtime?.connect(BigInt(peerId));
             if (peer) {
               setPeers([...peers, { peer, peerId: peer.peerId }]);
+              setConnectError("");
             }
           } catch (e) {
-            console.log(e);
+            setConnectError((e as Error).toString());
           } finally {
             setConnecting(false);
           }
         }}
       >
-        Connect to peer
-      </button>
+        {connecting ? "Connecting…" : "Connect to peer"}
+      </button>{" "}
+      {connectError}
       {peers.map((p) => (
         <Widget
           key={p.peerId.toString()}
