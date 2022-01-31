@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import "style.css";
+import "../style.css";
+import { useLocalStorage } from "@rehooks/local-storage";
 
 import {
   RainwayPeer,
@@ -11,41 +12,26 @@ import {
   InputLevel,
 } from "rainway-sdk";
 
-import { config, consoleLog, SandboxState } from "shared";
+import { consoleLog, SandboxState } from "../shared";
+import { Rainway } from "./rainway";
+import { Widget } from "./widget";
 
-// The component we make available:
-interface RainwayProps {
-  stream: RainwayStream | undefined;
+/// A peer that may have disconnected (but if so, we remember its ID).
+interface MaybePeer {
+  peerId: bigint;
+  peer: RainwayPeer | undefined;
 }
-const Rainway: React.FC<RainwayProps> = (props) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const stream = props.stream;
-  useEffect(() => {
-    if (props.stream) {
-      containerRef.current!.appendChild(props.stream.container);
-    }
-    return () => {
-      if (props.stream)
-        containerRef.current?.removeChild(props.stream.container);
-      stream?.leave();
-    };
-  }, [stream]);
-  return <div ref={containerRef}>{props.stream ? "" : "Loading…"}</div>;
-};
 
-// The component the SDK user writes:
-const Demo: React.FC = () => {
-  const [peerId, setPeerId] = useState<string>(
-    config.peerId ?? localStorage.getItem("peer-id") ?? "000000000000000000",
-  );
-  const [apiKey, setApiKey] = useState(
-    localStorage.getItem("api-key") || config.apiKey || "NO_KEY",
-  );
+const Demo = () => {
+  const [apiKey, setApiKey] = useLocalStorage("api-key", "NO_KEY");
   const [uiState, setUIState] = useState(SandboxState.Disconnected);
   const [runtime, setRuntime] = useState<RainwayRuntime | undefined>();
-  const [peer, setPeer] = useState<RainwayPeer | undefined>();
   const [currentStream, setStream] = useState<RainwayStream | undefined>();
-  const minimumLogLevel = config.minimumLogLevel ?? RainwayLogLevel.Debug;
+  const [peers, setPeers] = useState<MaybePeer[]>([]);
+
+  // This "peerId" string is the value for the connect prompt.
+  const [peerId, setPeerId] = useLocalStorage<string>("peerId-widget1", "00000");
+  const [connecting, setConnecting] = useState(false);
 
   /** Instantiate runtime if not yet built, connect it to instant relay. */
   const connectToRelay = async (): Promise<void> => {
@@ -59,7 +45,7 @@ const Demo: React.FC = () => {
         onRuntimeConnectionLost: (error) => {
           console.log("Connection lost:", error);
           setUIState(SandboxState.Disconnected);
-          setPeer(undefined);
+          setPeers([]);
           setStream(undefined);
         },
         onConnectionRequest: (request) => {
@@ -69,14 +55,21 @@ const Demo: React.FC = () => {
         onPeerMessage: (peer, data) => {
           console.log("onPeerMessage", peer, data);
         },
-        onPeerError: (peer, error) => {
+        onPeerError: (peer, error: RainwayError) => {
           console.warn("onPeerError", peer, error);
         },
         onPeerConnect: (peer) => {
-          console.log("onPeerConnect", peer);
+          const found = peers.find((p) => p.peerId === peer.peerId);
+          if (!found) {
+            setPeers([...peers, { peer, peerId: peer.peerId }]);
+          }
         },
         onPeerDisconnect: (peer) => {
-          setPeer(undefined);
+          setPeers(
+            peers.map((p) =>
+              p.peerId === peer.peerId ? { ...p, peer: undefined } : p,
+            ),
+          );
         },
         onStreamAnnouncement: (peer, announcement) => {
           // Don't do anything when a peer announces a stream (currently)
@@ -84,8 +77,7 @@ const Demo: React.FC = () => {
         onStreamStop: (stream) => {
           setStream(undefined);
         },
-        logSink: (level, message) =>
-          level >= minimumLogLevel && consoleLog(level, message),
+        logSink: (level, message) => consoleLog(level, message),
       });
       setRuntime(rt);
     } else {
@@ -107,6 +99,15 @@ const Demo: React.FC = () => {
         onChange={(e) => setApiKey(e.target.value)}
       />
       <br />
+      {SandboxState[uiState]}
+      <br />
+      <button
+        disabled={uiState !== SandboxState.Disconnected}
+        onClick={connectToRelay}
+      >
+        Connect
+      </button>
+      <br />
       <label htmlFor="peerId">Peer ID</label>
       <input
         id="peerId"
@@ -115,41 +116,39 @@ const Demo: React.FC = () => {
         onChange={(e) => setPeerId(e.target.value)}
       />
       <br />
-      {SandboxState[uiState]}
-      <br />
-      <button disabled={!!runtime} onClick={connectToRelay}>
-        Connect
-      </button>
       <button
-        disabled={!(runtime && !peer)}
+        disabled={!runtime || connecting}
         onClick={async () => {
-          setPeer(await runtime?.connect(BigInt(peerId)));
+          try {
+            setConnecting(true);
+            const peer = await runtime?.connect(BigInt(peerId));
+            if (peer) {
+              setPeers([...peers, { peer, peerId: peer.peerId }]);
+            }
+          } catch (e) {
+            console.log(e);
+          } finally {
+            setConnecting(false);
+          }
         }}
       >
         Connect to peer
       </button>
-      <button
-        disabled={!(peer && !currentStream)}
-        onClick={async () => {
-          const stream = await peer!.requestStream(
-            InputLevel.Mouse | InputLevel.Keyboard,
-          );
-          setStream(stream);
-        }}
-      >
-        Start stream
-      </button>
-      <button
-        disabled={!(peer && currentStream)}
-        onClick={async () => {
-          setStream(undefined);
-        }}
-      >
-        Stop stream
-      </button>
-      <div style={{ width: 800, height: 600, background: "#ccccdd" }}>
-        <Rainway stream={currentStream} />
-      </div>
+      {peers.map((p) => (
+        <Widget
+          key={p.peerId.toString()}
+          peer={p.peer}
+          peerId={p.peerId}
+          chatHistory={[]}
+          sendChat={(message) =>
+            p.peer?.send(new TextEncoder().encode(message))
+          }
+          disconnect={() => {
+            p.peer?.disconnect();
+            setPeers(peers.filter((x) => x.peerId !== p.peerId));
+          }}
+        />
+      ))}
     </div>
   );
 };

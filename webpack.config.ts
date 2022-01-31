@@ -62,7 +62,7 @@ const config: webpack.Configuration & { devServer: any } = {
     },
     entry: {
         index: "./src/index.ts",
-        react: "./src/index-react.tsx",
+        react: "./src/react-demo/index.tsx",
     },
     output: {
         filename: "bundle.[name].[fullhash].js",
@@ -80,7 +80,7 @@ const config: webpack.Configuration & { devServer: any } = {
             inject: "body",
             template: path.resolve(assetPath, "./index-react.ejs"),
             inlineSource: ".(js|css)$",
-            filename: "react.html"
+            filename: "react/index.html"
         }),
         new webpack.DefinePlugin({
             __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
