@@ -1,7 +1,7 @@
 import { InputLevel, RainwayPeer, RainwayStream } from "rainway-sdk";
 import React from "react";
 import { useState } from "react";
-import { Rainway } from "./rainway";
+import { Rainway } from "./Rainway";
 
 export interface Chat {
   type: "incoming" | "outgoing" | "info";
@@ -42,9 +42,9 @@ export const Widget = (props: WidgetProps) => {
   };
 
   return (
-    <div className="widget">
+    <div className="card widget">
       <div className="widget-header">
-        Peer Id: {props.peerId}
+        Peer ID: {props.peerId}
         <br />
         <button onClick={() => props.disconnect()}>Disconnect</button>
         <button disabled={!props.peer || !stream}>Fullscreen</button>

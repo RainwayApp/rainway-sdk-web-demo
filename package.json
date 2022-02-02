@@ -30,6 +30,7 @@
     "autoprefixer": "^9.8.5",
     "css-loader": "^3.6.0",
     "file-loader": "^6.0.0",
+    "gh-pages": "^3.2.3",
     "html-webpack-plugin": "^4.3.0",
     "postcss-loader": "^3.0.0",
     "shelljs": "^0.8.4",
