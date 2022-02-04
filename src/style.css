@@ -438,14 +438,22 @@ header {
   padding: 24px 32px;
   display: flex;
   align-items: center;
+  justify-content: center;
   background: #000000;
   box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.15);
+}
+
+.header-inner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  max-width: 1100px;
 }
 
 .build-notes {
   flex: 1;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
 }
 
@@ -476,6 +484,13 @@ h2 {
   font-size: 16px;
   font-weight: 600;
   color: var(--clr-neutral-50);
+}
+
+h3 {
+  font-family: var(--heading-font-family);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--clr-neutral-100);
 }
 
 button {
@@ -519,19 +534,21 @@ input[type="text"] {
   align-items: center;
   padding: 4px 8px;
   font-size: 12px;
+  font-weight: 500;
   border-radius: 24px;
+  background: var(--clr-neutral-900);
+  color: var(--clr-neutral-300);
 }
 
-.badge.red {
-  background: var(--clr-red-900);
-  font-weight: 500;
-  color: var(--clr-red-500);
+.badge.ok {
+  background: var(--clr-primary-900);
+  color: var(--clr-primary-300);
 }
 
 .backdrop {
   width: 100%;
   height: 180px;
-  position: fixed;
+  position: absolute;
   z-index: -5;
   pointer-events: none;
   background: #000000;
@@ -539,6 +556,8 @@ input[type="text"] {
 
 .demo {
   padding: 32px;
+  max-width: 1100px;
+  margin: auto;
 }
 
 .flex {
@@ -556,4 +575,57 @@ svg {
   border-radius: 8px;
   padding: 24px;
   margin: 24px 0;
+}
+
+.widget-body {
+  display: flex;
+}
+
+.stream-column {
+  flex: 2;
+}
+
+.chat-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-history {
+  flex: 1;
+}
+
+.chat-bottom {
+  display: flex;
+  position: relative;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+}
+
+button.chat-send-button {
+  cursor: pointer;
+  background: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  right: 16px;
+  margin-top: auto;
+}
+
+button.chat-send-button:disabled {
+  cursor: inherit;
+  filter: grayscale();
+}
+
+.stream-wrapper {
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background-image: /* url("https://rainway.com/images/logo.svg"), */
+    linear-gradient(-45deg, #141625, #241635);
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  height: 393px;
 }

@@ -127,7 +127,7 @@ class StreamWidget {
     /** Send UTF-8 encoded message to peer over arbitrary messaging channel and display in the chatbox. */
     private sendChatMessage(message: string): void {
         if (this.peer) {
-            this.peer.send(new TextEncoder().encode(message));
+            this.peer.send("Messages", new TextEncoder().encode(message));
             this.displayChatMessage("You", message);
             this.chatInput.value = "";
         }
@@ -303,12 +303,13 @@ export class StreamSandbox {
                     request.accept();
                 },
                 // Listener for incoming arbitrary messages
-                onPeerMessage: (peer, data) => {
+                onPeerMessage: (peer, ch, data) => {
                     // the only arbitrary messages we're listening for are basic chat messages
                     const w = this.widgets.find((w) => w.peer === peer);
                     if (w === undefined) return;
                     w.displayChatMessage(w.hostNickname(), new TextDecoder().decode(data));
                 },
+                onPeerDataChannel: () => {},
                 // Listener for errors from particular peers
                 onPeerError: (peer, error) => {},
                 // Listener for when a peer finishes connecting
