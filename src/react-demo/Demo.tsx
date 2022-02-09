@@ -69,12 +69,12 @@ export const Demo = () => {
           onPeerConnect: (peer) => {
             const found = peers.find((p) => p.peerId === peer.peerId);
             if (!found) {
-              setPeers([...peers, { peer, peerId: peer.peerId }]);
+              setPeers((ps) => [...ps, { peer, peerId: peer.peerId }]);
             }
           },
           onPeerDisconnect: (peer) => {
-            setPeers(
-              peers.map((p) =>
+            setPeers((ps) =>
+              ps.map((p) =>
                 p.peerId === peer.peerId ? { ...p, peer: undefined } : p,
               ),
             );
@@ -138,7 +138,7 @@ export const Demo = () => {
           }
           disconnect={() => {
             p.peer?.disconnect();
-            setPeers(peers.filter((x) => x.peerId !== p.peerId));
+            setPeers((ps) => ps.filter((x) => x.peerId !== p.peerId));
           }}
         />
       ))}
@@ -165,7 +165,7 @@ export const Demo = () => {
               const peer = await runtime?.connect(BigInt(peerId));
               if (peer) {
                 peer.createDataChannel("Message", RainwayChannelMode.Reliable);
-                setPeers([...peers, { peer, peerId: peer.peerId }]);
+                setPeers((ps) => [...ps, { peer, peerId: peer.peerId }]);
                 setConnectError("");
               }
             } catch (e) {
