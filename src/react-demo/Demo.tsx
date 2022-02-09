@@ -49,7 +49,7 @@ export const Demo = () => {
       try {
         rt = await RainwayRuntime.initialize({
           apiKey: apiKey,
-          externalId: "web-sdk-demo-sandbox",
+          externalId: "web-demo-react",
           onRuntimeConnectionLost: (error) => {
             console.log("Connection lost:", error);
             setRuntime(undefined);
