@@ -61,7 +61,7 @@ const config: webpack.Configuration & { devServer: any } = {
         ],
     },
     entry: {
-        index: "./src/index.ts",
+        quick: "./src/quick-demo/index.tsx",
         react: "./src/react-demo/index.tsx",
     },
     output: {
@@ -70,17 +70,18 @@ const config: webpack.Configuration & { devServer: any } = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            chunks: ["index"],
+            chunks: ["quick"],
             inject: "body",
-            template: path.resolve(assetPath, "./index.ejs"),
+            template: path.resolve(assetPath, "./index-quick.ejs"),
             inlineSource: ".(js|css)$",
+            filename: "quick/index.html"
         }),
         new HtmlWebpackPlugin({
             chunks: ["react"],
             inject: "body",
             template: path.resolve(assetPath, "./index-react.ejs"),
             inlineSource: ".(js|css)$",
-            filename: "react/index.html"
+            filename: "index.html"
         }),
         new webpack.DefinePlugin({
             __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
