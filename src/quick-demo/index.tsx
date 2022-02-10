@@ -10,7 +10,8 @@ const QuickDemo = () => {
   useAsyncEffect(async (isAlive) => {
     try {
       const rt = await RainwayRuntime.initialize({
-        apiKey: "TODO",
+        apiKey:
+          new URLSearchParams(window.location.search).get("api_key") ?? "",
         externalId: "web-demo-quick",
         onRuntimeConnectionLost: (error) => {
           setRuntime(undefined);
