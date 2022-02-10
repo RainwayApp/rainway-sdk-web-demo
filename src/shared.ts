@@ -34,7 +34,7 @@ export const consoleLog = (level: RainwayLogLevel, message: string): void => {
   } else if (level >= RainwayLogLevel.Information) {
     console.info(message);
   } else {
-    console.log(message);
+    console.log(`[${RainwayLogLevel[level]}] ${message}`);
   }
 };
 
