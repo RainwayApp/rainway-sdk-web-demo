@@ -5,18 +5,15 @@ import { useLocalStorage } from "./util";
 
 import {
   RainwayPeer,
-  RainwayStream,
   RainwayError,
-  RainwayLogLevel,
   RainwayRuntime,
-  InputLevel,
   RainwayChannelMode,
 } from "rainway-sdk";
 
 import { Chat, consoleLog, SandboxState } from "../shared";
 import { Widget } from "./Widget";
 
-/// A peer that may have disconnected (but if so, we remember its ID).
+/// A peer with some data relevant to the demo app tacked on.
 interface DemoPeer {
   peerId: bigint;
   peer: RainwayPeer | undefined;
@@ -24,10 +21,13 @@ interface DemoPeer {
   streamStopCount: number;
 }
 
+/// Make a new DemoPeer from a RainwayPeer.
 function makePeer(peer: RainwayPeer): DemoPeer {
   return { peer, peerId: peer.peerId, chatHistory: [], streamStopCount: 0 };
 }
 
+/// The main application component, which manages a list of DemoPeers and
+/// renders them as interactable widgets.
 export const Demo = () => {
   const [apiKey, setApiKey] = useLocalStorage("api-key", "");
   const [connectingRuntime, setConnectingRuntime] = useState(false);
@@ -51,8 +51,7 @@ export const Demo = () => {
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState("");
 
-  /** Instantiate runtime if not yet built, connect it to instant relay. */
-  const connectToRelay = async (): Promise<void> => {
+  const connectToRainway = async (): Promise<void> => {
     // Make and attach the Rainway client.
     let rt: RainwayRuntime;
     if (!runtime) {
@@ -62,6 +61,7 @@ export const Demo = () => {
           apiKey: apiKey,
           externalId: "web-demo-react",
           onRuntimeConnectionLost: (error) => {
+            // When the connection is fatally lost, drop all peers.
             console.log("Connection lost:", error);
             setRuntime(undefined);
             setPeers([]);
@@ -71,23 +71,31 @@ export const Demo = () => {
             request.accept();
           },
           onPeerMessage: (peer, ch, data) => {
+            // Rainway offers arbitrary peer-to-peer data channel communication.
+            // In our demo apps, we simply interpret the bytestreams as UTF-8
+            // "chat messages" and display them in the right widget:
             const chat: Chat = {
               type: "incoming",
               message: new TextDecoder().decode(data),
             };
             addChat(peer, chat);
           },
-          onPeerDataChannel: () => {},
+          onPeerDataChannel: () => {
+            // We don't particularly care about a data channel opening.
+          },
           onPeerError: (peer, error: RainwayError) => {
+            // When a peer encounters an error, log it to the console.
             console.warn("onPeerError", peer, error);
           },
           onPeerConnect: (peer) => {
+            // When a peer connection is established, add a DemoPeer/widget.
             const found = peers.find((p) => p.peerId === peer.peerId);
             if (!found) {
               setPeers((ps) => [...ps, makePeer(peer)]);
             }
           },
           onPeerDisconnect: (peer) => {
+            // When a peer connection is lost, remove a DemoPeer/widget.
             console.warn("onPeerDisconnect", peer);
             setPeers((ps) =>
               ps.map((p) =>
@@ -96,9 +104,12 @@ export const Demo = () => {
             );
           },
           onStreamAnnouncement: (peer, announcement) => {
-            // Don't do anything when a peer announces a stream (currently)
+            // When a stream is initiated remotely... (TODO).
           },
           onStreamStop: (stream) => {
+            // When a stream is stopped, increment that DemoPeer's
+            // "streamStopCount". A `useEffect` in the Widget listens for such
+            // increments and kills the stream state.
             setPeers((ps) =>
               ps.map((p) =>
                 [...(p.peer?.streams.values() ?? [])].some((s) => s === stream)
@@ -107,7 +118,10 @@ export const Demo = () => {
               ),
             );
           },
-          logSink: (level, message) => consoleLog(level, message),
+          logSink: (level, message) => {
+            // Where should log messages from Rainway go?
+            consoleLog(level, message);
+          },
         });
         setRuntime(rt);
       } finally {
@@ -145,7 +159,7 @@ export const Demo = () => {
       <button
         className="m-l-16"
         disabled={runtime !== undefined || connectingRuntime}
-        onClick={connectToRelay}
+        onClick={connectToRainway}
       >
         Connect to Rainway
       </button>

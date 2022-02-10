@@ -13,6 +13,8 @@ export interface WidgetProps {
   streamStopCount: number;
 }
 
+/// A single widget in the demo app, exposing an interactive interface to a
+/// Rainway peer-to-peer connection. The user can chat and request streams.
 export const Widget = (props: WidgetProps) => {
   const offline = props.peer === undefined;
 

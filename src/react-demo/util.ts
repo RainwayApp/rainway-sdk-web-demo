@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+/// A hook that's like useState(), but backed by LocalStorage under a given key.
 export function useLocalStorage<T>(
   key: string,
   initial: T,

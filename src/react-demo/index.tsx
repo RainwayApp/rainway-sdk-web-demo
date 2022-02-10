@@ -4,7 +4,7 @@ import "../style.css";
 import { Demo } from "./Demo";
 import { Clock } from "./icons/Clock";
 import { History } from "./icons/History";
-import { Logo } from "./Logo";
+import { Logo } from "./icons/Logo";
 
 // Defined using DefinePlugin in webpack.config.ts
 declare const __BUILD_DATE__: string;
