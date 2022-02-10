@@ -37,3 +37,8 @@ export const consoleLog = (level: RainwayLogLevel, message: string): void => {
     console.log(message);
   }
 };
+
+export interface Chat {
+  type: "incoming" | "outgoing" | "info";
+  message: string;
+}

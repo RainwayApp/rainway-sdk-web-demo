@@ -577,6 +577,16 @@ svg {
   margin: 24px 0;
 }
 
+.card-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.card-top > * + * {
+  margin-left: 8px;
+}
+
 .widget-body {
   display: flex;
 }

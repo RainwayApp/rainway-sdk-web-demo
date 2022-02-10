@@ -13,30 +13,41 @@ import {
   RainwayChannelMode,
 } from "rainway-sdk";
 
-import { consoleLog, SandboxState } from "../shared";
+import { Chat, consoleLog, SandboxState } from "../shared";
 import { Widget } from "./Widget";
 
 /// A peer that may have disconnected (but if so, we remember its ID).
-interface MaybePeer {
+interface DemoPeer {
   peerId: bigint;
   peer: RainwayPeer | undefined;
+  chatHistory: Chat[];
+  streamStopCount: number;
+}
+
+function makePeer(peer: RainwayPeer): DemoPeer {
+  return { peer, peerId: peer.peerId, chatHistory: [], streamStopCount: 0 };
 }
 
 export const Demo = () => {
   const [apiKey, setApiKey] = useLocalStorage("api-key", "");
   const [connectingRuntime, setConnectingRuntime] = useState(false);
   const [runtime, setRuntime] = useState<RainwayRuntime | undefined>();
-  const [peers, setPeers] = useState<MaybePeer[]>([
-    { peerId: BigInt(123), peer: undefined },
+  const [peers, setPeers] = useState<DemoPeer[]>([
+    // { peerId: BigInt(123), peer: undefined, chatHistory: [] },
   ]);
 
-  // This "peerId" string is the value for the connect prompt.
-  const [x, setX] = useLocalStorage<string>("test", "");
-  useEffect(() => setX("123456789123456789123"));
-  console.log("x", x);
+  function addChat(peer: RainwayPeer, chat: Chat) {
+    setPeers((ps) =>
+      ps.map((p) =>
+        p.peerId === peer.peerId
+          ? { ...p, chatHistory: [...p.chatHistory, chat] }
+          : p,
+      ),
+    );
+  }
 
+  // This "peerId" string is the value for the connect prompt.
   const [peerId, setPeerId] = useLocalStorage<string>("peerId-widget1", "");
-  console.log(localStorage, peerId);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState("");
 
@@ -60,7 +71,11 @@ export const Demo = () => {
             request.accept();
           },
           onPeerMessage: (peer, ch, data) => {
-            console.log("onPeerMessage", peer, data);
+            const chat: Chat = {
+              type: "incoming",
+              message: new TextDecoder().decode(data),
+            };
+            addChat(peer, chat);
           },
           onPeerDataChannel: () => {},
           onPeerError: (peer, error: RainwayError) => {
@@ -69,10 +84,11 @@ export const Demo = () => {
           onPeerConnect: (peer) => {
             const found = peers.find((p) => p.peerId === peer.peerId);
             if (!found) {
-              setPeers((ps) => [...ps, { peer, peerId: peer.peerId }]);
+              setPeers((ps) => [...ps, makePeer(peer)]);
             }
           },
           onPeerDisconnect: (peer) => {
+            console.warn("onPeerDisconnect", peer);
             setPeers((ps) =>
               ps.map((p) =>
                 p.peerId === peer.peerId ? { ...p, peer: undefined } : p,
@@ -83,7 +99,13 @@ export const Demo = () => {
             // Don't do anything when a peer announces a stream (currently)
           },
           onStreamStop: (stream) => {
-            // TODO cause widgets to check and drop stream
+            setPeers((ps) =>
+              ps.map((p) =>
+                [...(p.peer?.streams.values() ?? [])].some((s) => s === stream)
+                  ? { ...p, streamStopCount: p.streamStopCount + 1 }
+                  : p,
+              ),
+            );
           },
           logSink: (level, message) => consoleLog(level, message),
         });
@@ -132,14 +154,18 @@ export const Demo = () => {
           key={p.peerId.toString()}
           peer={p.peer}
           peerId={p.peerId}
-          chatHistory={[]}
-          sendChat={(message) =>
-            p.peer?.send("Message", new TextEncoder().encode(message))
-          }
+          chatHistory={p.chatHistory}
+          sendChat={(message) => {
+            if (p.peer) {
+              addChat(p.peer, { type: "outgoing", message });
+              p.peer.send("Message", new TextEncoder().encode(message));
+            }
+          }}
           disconnect={() => {
             p.peer?.disconnect();
             setPeers((ps) => ps.filter((x) => x.peerId !== p.peerId));
           }}
+          streamStopCount={p.streamStopCount}
         />
       ))}
       <div className="card flex">
@@ -165,7 +191,6 @@ export const Demo = () => {
               const peer = await runtime?.connect(BigInt(peerId));
               if (peer) {
                 peer.createDataChannel("Message", RainwayChannelMode.Reliable);
-                setPeers((ps) => [...ps, { peer, peerId: peer.peerId }]);
                 setConnectError("");
               }
             } catch (e) {
