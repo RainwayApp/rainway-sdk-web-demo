@@ -10,7 +10,7 @@ import {
   RainwayChannelMode,
 } from "rainway-sdk";
 
-import { Chat, consoleLog, SandboxState } from "../shared";
+import { Chat, consoleLog } from "../shared";
 import { Widget } from "./Widget";
 
 /// A peer with some data relevant to the demo app tacked on.

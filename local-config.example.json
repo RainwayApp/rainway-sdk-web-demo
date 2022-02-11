@@ -1,8 +1,0 @@
-{
-    "input": true,
-    "logVideoStats": false,
-    "logTransportStats": false,
-    "rainwayLogsInConsole": true,
-    "minimumLogLevel": 1,
-    "apiKey": "..."
-}
