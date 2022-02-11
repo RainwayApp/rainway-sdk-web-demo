@@ -1,8 +1,8 @@
 {
-  "name": "sandbox",
+  "name": "rainway-sdk-web-demo",
   "type": "module",
   "version": "1.0.0",
-  "description": "Rainway SDK sandbox.",
+  "description": "Rainway SDK Web Demo",
   "main": "index.js",
   "repository": "https://github.com/RainwayApp/rainway-sdk-web-demo",
   "scripts": {
