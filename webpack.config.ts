@@ -1,6 +1,7 @@
 import path = require("path");
 import webpack = require("webpack");
 import HtmlWebpackPlugin = require("html-webpack-plugin");
+import CopyWebpackPlugin = require("copy-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const assetPath = path.resolve(__dirname, "./assets");
 const outputPath = path.resolve(__dirname, "./public");
@@ -86,6 +87,11 @@ const config: webpack.Configuration & { devServer: any } = {
         new webpack.DefinePlugin({
             __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
             __BUILD_COMMIT__: JSON.stringify(require('child_process').execSync('git rev-parse --short HEAD').toString()),
+        }),
+        new CopyWebpackPlugin({
+            patterns: [
+                {from: "CNAME"},
+            ]
         })
     ],
     devtool: "inline-source-map",
