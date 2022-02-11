@@ -17,3 +17,7 @@ A widget will pop up that you can use to request a stream (of the remote desktop
 `Demo.tsx` defines the component for the full app, which manages the
 RainwayRuntime instance. It renders zero or more `Widget.tsx` components, each
 managing a Rainway peer-to-peer connection.
+
+## Credits
+
+Icons from [Hero Icons](https://heroicons.com/) (under the MIT license).
