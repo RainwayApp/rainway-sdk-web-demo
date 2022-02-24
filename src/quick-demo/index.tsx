@@ -24,11 +24,8 @@ const QuickDemo = () => {
         onPeerError: (peer, error) => {
           console.warn("onPeerError", peer, error);
         },
-        onPeerConnect: (peer) => {
-          console.log("onPeerConnect", peer);
-        },
-        onPeerDisconnect: (peer) => {
-          console.log("onPeerDisconnect", peer);
+        onPeerStateChange: (peer, state) => {
+          console.log(`Peer ${peer.peerId} changed states to ${state}`);
         },
         onStreamAnnouncement: () => {},
         onStreamStop: () => {},

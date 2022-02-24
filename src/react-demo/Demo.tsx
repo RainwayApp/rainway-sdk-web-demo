@@ -8,6 +8,7 @@ import {
   RainwayError,
   RainwayRuntime,
   RainwayChannelMode,
+  RainwayPeerState,
 } from "rainway-sdk";
 
 import { Chat, consoleLog } from "../shared";
@@ -87,21 +88,25 @@ export const Demo = () => {
             // When a peer encounters an error, log it to the console.
             console.warn("onPeerError", peer, error);
           },
-          onPeerConnect: (peer) => {
-            // When a peer connection is established, add a DemoPeer/widget.
-            const found = peers.find((p) => p.peerId === peer.peerId);
-            if (!found) {
-              setPeers((ps) => [...ps, makePeer(peer)]);
+          onPeerStateChange: (peer, state) => {
+            // on connect
+            if (state == RainwayPeerState.New) {
+              // When a peer connection is established, add a DemoPeer/widget.
+              const found = peers.find((p) => p.peerId === peer.peerId);
+              if (!found) {
+                setPeers((ps) => [...ps, makePeer(peer)]);
+              }
             }
-          },
-          onPeerDisconnect: (peer) => {
-            // When a peer connection is lost, remove a DemoPeer/widget.
-            console.warn("onPeerDisconnect", peer);
-            setPeers((ps) =>
-              ps.map((p) =>
-                p.peerId === peer.peerId ? { ...p, peer: undefined } : p,
-              ),
-            );
+            // on disconnect
+            else if (state == RainwayPeerState.Failed) {
+              // When a peer connection is lost, remove a DemoPeer/widget.
+              console.warn("onPeerDisconnect", peer);
+              setPeers((ps) =>
+                ps.map((p) =>
+                  p.peerId === peer.peerId ? { ...p, peer: undefined } : p,
+                ),
+              );
+            }
           },
           onStreamAnnouncement: (peer, announcement) => {
             // When a stream is initiated remotely... (TODO).
@@ -130,7 +135,6 @@ export const Demo = () => {
     } else {
       rt = runtime;
     }
-    await rt.connectToGateway();
   };
 
   return (
