@@ -37,20 +37,20 @@ jobs:
       run: ls -alR public
 
     - name: Parse git commit
-      if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: echo GH_REL_TAG=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/v0-\1/") >> $GITHUB_ENV
 
     # Remotely we create and push the tag
     - name: Create Release Tag
       run: git tag ${{ env.GH_REL_TAG }} && git push origin ${{ env.GH_REL_TAG }}
-      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
 
     # Locally we debug the tag parse
     - run: echo ${{ env.GH_REL_TAG }}
-      if: ${{ env.ACT && github.ref == 'refs/heads/main'  }}
+      if: ${{ env.ACT && github.ref == 'refs/heads/master'  }}
 
     - name: Package Public
-      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
       run: |
         mkdir rel
         zip rel/web-demo-${{ env.GH_REL_TAG }}.zip -r public &&
@@ -58,7 +58,7 @@ jobs:
 
     # Remotely we create the release from the tag
     - name: GH Release
-      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
       uses: softprops/action-gh-release@v0.1.14
       with:
         tag_name: ${{ env.GH_REL_TAG }}
@@ -66,7 +66,7 @@ jobs:
         files: rel/*.zip
 
     - name: Deploy to GitHub Pages
-      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
       uses: Cecilapp/GitHub-Pages-deploy@v3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
