@@ -1,0 +1,77 @@
+name: CI/CD
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  ci_cd:
+    runs-on: ubuntu-latest
+    steps:
+    # Act images won't have git which webpack shells out to during build
+    # To work around this, we install this if we're in the ACT environment
+    - name: Local-only setup
+      if: ${{ env.ACT }}
+      run: apt-get update && apt-get install -y git
+
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    
+    - name: Build
+      run: npm ci && npm run build
+
+     # Locally we debug the build output
+    - name: List public (local only)
+      if: ${{ env.ACT }}
+      run: ls -alR public
+
+    - name: Parse git commit
+      if: ${{ github.ref == 'refs/heads/main' }}
+      run: echo GH_REL_TAG=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/v0-\1/") >> $GITHUB_ENV
+
+    # Remotely we create and push the tag
+    - name: Create Release Tag
+      run: git tag ${{ env.GH_REL_TAG }} && git push origin ${{ env.GH_REL_TAG }}
+      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+
+    # Locally we debug the tag parse
+    - run: echo ${{ env.GH_REL_TAG }}
+      if: ${{ env.ACT && github.ref == 'refs/heads/main'  }}
+
+    - name: Package Public
+      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+      run: |
+        mkdir rel
+        zip rel/web-demo-${{ env.GH_REL_TAG }}.zip -r public &&
+        echo "Packaged."
+
+    # Remotely we create the release from the tag
+    - name: GH Release
+      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+      uses: softprops/action-gh-release@v0.1.14
+      with:
+        tag_name: ${{ env.GH_REL_TAG }}
+        generate_release_notes: true
+        files: rel/*.zip
+
+    - name: Deploy to GitHub Pages
+      if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
+      uses: Cecilapp/GitHub-Pages-deploy@v3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        email: ci@rainway.com
+        build_dir: public/
+        cname: webdemo.rainway.com
+        jekyll: no
