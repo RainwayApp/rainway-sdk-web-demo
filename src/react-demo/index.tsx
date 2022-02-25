@@ -9,6 +9,7 @@ import { Logo } from "./icons/Logo";
 // Defined using DefinePlugin in webpack.config.ts
 declare const __BUILD_DATE__: string;
 declare const __BUILD_COMMIT__: string;
+declare const __RAINWAY_SDK_VERSION__: string;
 
 function prettyDate(date: Date) {
   return (
@@ -21,6 +22,8 @@ function prettyDate(date: Date) {
     date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
   );
 }
+
+const sdkHref = `https://www.npmjs.com/package/rainway-sdk/v/${__RAINWAY_SDK_VERSION__}`;
 
 ReactDOM.render(
   <React.StrictMode>
@@ -37,10 +40,7 @@ ReactDOM.render(
           </div>
           <div className="build-note">
             <History />
-            {/* Commit {__BUILD_COMMIT__} */}
-            <a href="https://www.npmjs.com/package/rainway-sdk/v/0.2.3">
-              Web SDK 0.2.3
-            </a>
+            <a href={sdkHref}>Web SDK {__RAINWAY_SDK_VERSION__}</a>
           </div>
         </div>
       </div>
