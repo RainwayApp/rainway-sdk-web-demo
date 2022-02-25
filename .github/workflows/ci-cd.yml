@@ -37,6 +37,7 @@ jobs:
       run: ls -alR public
 
     - name: Parse git commit
+      if: ${{ github.ref == 'refs/heads/main' }}
       run: echo GH_REL_TAG=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/v0-\1/") >> $GITHUB_ENV
 
     # Remotely we create and push the tag
@@ -46,7 +47,7 @@ jobs:
 
     # Locally we debug the tag parse
     - run: echo ${{ env.GH_REL_TAG }}
-      if: ${{ env.ACT }}
+      if: ${{ env.ACT && github.ref == 'refs/heads/main'  }}
 
     - name: Package Public
       if: ${{ !env.ACT && github.ref == 'refs/heads/main' }}
