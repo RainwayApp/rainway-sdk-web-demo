@@ -154,6 +154,7 @@ export const Demo = () => {
       <input
         id="apiKey"
         type="text"
+        spellCheck={false}
         size={36}
         value={apiKey}
         disabled={runtime !== undefined || connectingRuntime}
@@ -194,6 +195,7 @@ export const Demo = () => {
           className="m-l-8"
           id="peerId"
           type="text"
+          spellCheck={false}
           value={peerId}
           placeholder="511111111111111111"
           disabled={!runtime || connecting}
