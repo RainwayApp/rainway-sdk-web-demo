@@ -59,6 +59,7 @@ export const Widget = (props: WidgetProps) => {
         <input
           id="peerId"
           type="text"
+          spellCheck={false}
           value={props.peerId.toString()}
           disabled={true}
         />

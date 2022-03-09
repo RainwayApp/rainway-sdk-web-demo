@@ -639,3 +639,14 @@ button.chat-send-button:disabled {
   width: 100%;
   height: 393px;
 }
+
+a {
+  color: var(--clr-primary-400);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--clr-neutral-50);
+}
