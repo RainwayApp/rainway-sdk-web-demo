@@ -108,7 +108,7 @@ const config: webpack.Configuration & { devServer: any } = {
   devServer: {
     contentBase: outputPath,
     host: "0.0.0.0",
-    port: 4443,
+    port: 4445,
     disableHostCheck: true,
     inline: true,
     stats: "minimal",

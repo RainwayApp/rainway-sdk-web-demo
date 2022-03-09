@@ -9,4 +9,4 @@ Check out our documentation at https://docs.rainway.com.
 ## Development
 
 1. Install dependencies: `npm install`
-2. Run `npm run dev` to launch a development server. Now go to `http://localhost:4443` in your browser.
+2. Run `npm run dev` to launch a development server. Now go to `http://localhost:4445` in your browser.
