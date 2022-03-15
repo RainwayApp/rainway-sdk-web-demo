@@ -13,18 +13,18 @@ const QuickDemo = () => {
         apiKey:
           new URLSearchParams(window.location.search).get("api_key") ?? "",
         externalId: "web-demo-quick",
-        onRuntimeConnectionLost: (error) => {
+        onRuntimeConnectionLost: (rt, error) => {
           setRuntime(undefined);
         },
-        onConnectionRequest: (request) => {
+        onConnectionRequest: (rt, request) => {
           request.accept();
         },
         onPeerMessage: () => {},
         onPeerDataChannel: () => {},
-        onPeerError: (peer, error) => {
+        onPeerError: (rt, peer, error) => {
           console.warn("onPeerError", peer, error);
         },
-        onPeerStateChange: (peer, state) => {
+        onPeerStateChange: (rt, peer, state) => {
           console.log(`Peer ${peer.peerId} changed states to ${state}`);
         },
         onStreamAnnouncement: () => {},

@@ -61,17 +61,17 @@ export const Demo = () => {
         rt = await RainwayRuntime.initialize({
           apiKey: apiKey,
           externalId: "web-demo-react",
-          onRuntimeConnectionLost: (error) => {
+          onRuntimeConnectionLost: (rt, error) => {
             // When the connection is fatally lost, drop all peers.
             console.log("Connection lost:", error);
             setRuntime(undefined);
             setPeers([]);
           },
-          onConnectionRequest: (request) => {
+          onConnectionRequest: (rt, request) => {
             // Auto-accept every request.
             request.accept();
           },
-          onPeerMessage: (peer, ch, data) => {
+          onPeerMessage: (rt, peer, ch, data) => {
             // Rainway offers arbitrary peer-to-peer data channel communication.
             // In our demo apps, we simply interpret the bytestreams as UTF-8
             // "chat messages" and display them in the right widget:
@@ -84,11 +84,11 @@ export const Demo = () => {
           onPeerDataChannel: () => {
             // We don't particularly care about a data channel opening.
           },
-          onPeerError: (peer, error: RainwayError) => {
+          onPeerError: (rt, peer, error: RainwayError) => {
             // When a peer encounters an error, log it to the console.
             console.warn("onPeerError", peer, error);
           },
-          onPeerStateChange: (peer, state) => {
+          onPeerStateChange: (rt, peer, state) => {
             // on connect
             if (state == RainwayPeerState.New) {
               // When a peer connection is established, add a DemoPeer/widget.
@@ -108,10 +108,10 @@ export const Demo = () => {
               );
             }
           },
-          onStreamAnnouncement: (peer, announcement) => {
+          onStreamAnnouncement: (rt, peer, announcement) => {
             // When a stream is initiated remotely... (TODO).
           },
-          onStreamStop: (stream) => {
+          onStreamStop: (rt, stream) => {
             // When a stream is stopped, increment that DemoPeer's
             // "streamStopCount". A `useEffect` in the Widget listens for such
             // increments and kills the stream state.
