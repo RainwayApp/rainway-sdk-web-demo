@@ -57,6 +57,110 @@ export const Demo = () => {
     let rt: RainwayRuntime;
     if (!runtime) {
       setConnectingRuntime(true);
+
+      // dc instrumentation stack
+      window.RTCPeerConnection = new Proxy(window.RTCPeerConnection, {
+        construct: (target, args) => {
+          // just to make this code more readable, let's type the report
+          type StatsReport = {
+            timestamp?: number;
+            channels: {
+              // from runtime inspection of what chrome stats have
+              [id: string]: {
+                label: string;
+                bytesReceived: number;
+                bytesSent: number;
+                messagesReceived: number;
+                messagesSent: number;
+                protocol: string;
+                state: string;
+              };
+            };
+          };
+
+          // actual ctor call
+          const instance = new target(...args) as RTCPeerConnection;
+
+          // reports processor
+          const data: StatsReport[] = [];
+          const tick = setInterval(() => {
+            instance.getStats().then((stats) => {
+              let report: StatsReport = { channels: {} };
+              stats.forEach((v, k) => {
+                // we only care about data channels for now
+                if (v.type === "data-channel") {
+                  report.timestamp = v.timestamp;
+                  report.channels[v.id] = {
+                    label: v.label,
+                    bytesReceived: v.bytesReceived,
+                    bytesSent: v.bytesSent,
+                    messagesReceived: v.messagesReceived,
+                    messagesSent: v.messagesSent,
+                    protocol: v.protocol,
+                    state: v.state,
+                  };
+                }
+              });
+
+              data.push(report);
+            });
+          }, 5000);
+
+          // helper to download a report when the RTCPeerConnection is closed
+          const downloadLiteralAsText = (
+            exportObj: string,
+            exportName: string,
+          ) => {
+            var dataStr =
+              "data:text/plain;charset=utf-8," + encodeURIComponent(exportObj);
+            var downloadAnchorNode = document.createElement("a");
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", exportName + ".txt");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+          };
+
+          // we're going to replace this, but want to call the original after
+          const originalClose = instance.close;
+
+          instance.close = () => {
+            clearInterval(tick);
+
+            let textEncoding = data
+              .flatMap((report) => {
+                return Object.values(report.channels).flatMap((entry) => {
+                  // convert the json report data into a line-by-line sampling that textre.bengreenier.com can more easily process
+                  // also create a line line for each data type with a unique identifier
+
+                  return [
+                    `t:${new Date(report.timestamp as number).toISOString()}|${
+                      entry.label
+                    }-bytesSent|${entry.bytesSent}`,
+                    `t:${new Date(report.timestamp as number).toISOString()}|${
+                      entry.label
+                    }-bytesReceived|${entry.bytesReceived}`,
+                    `t:${new Date(report.timestamp as number).toISOString()}|${
+                      entry.label
+                    }-messagesSent|${entry.messagesSent}`,
+                    `t:${new Date(report.timestamp as number).toISOString()}|${
+                      entry.label
+                    }-messagesReceived|${entry.messagesReceived}`,
+                  ];
+                });
+              })
+              .join("\n");
+
+            downloadLiteralAsText(textEncoding, "channels");
+            originalClose.apply(instance);
+          };
+
+          // return the instance, as if the constructor was called directly
+          // this way rainway doesn't even know what we did
+          return instance;
+        },
+      });
+
       try {
         rt = await RainwayRuntime.initialize({
           apiKey: apiKey,
