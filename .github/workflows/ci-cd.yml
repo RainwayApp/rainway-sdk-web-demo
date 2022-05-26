@@ -70,7 +70,8 @@ jobs:
       # Shuffle around the directory structure so public contains the full layout (from beta)
       - name: Create beta directory on gh-pages
         if: ${{ !env.ACT && github.ref == 'refs/heads/beta' }}
-        run: cp -R public/ gh_pages_root/beta/ &&
+        run: rm -rf gh_pages_root/beta/ &&
+          cp -R public/ gh_pages_root/beta/ &&
           rm -rf gh_pages_root/.git &&
           rm -rf public/ &&
           mv gh_pages_root/ public/
