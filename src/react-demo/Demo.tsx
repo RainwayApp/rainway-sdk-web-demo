@@ -9,6 +9,7 @@ import {
   RainwayRuntime,
   RainwayChannelMode,
   RainwayPeerState,
+  RainwayStreamAnnouncement,
 } from "rainway-sdk";
 
 import { Chat, consoleLog } from "../shared";
@@ -18,13 +19,20 @@ import { Widget } from "./Widget";
 interface DemoPeer {
   peerId: bigint;
   peer: RainwayPeer | undefined;
+  announcements: RainwayStreamAnnouncement[];
   chatHistory: Chat[];
   streamStopCount: number;
 }
 
 /// Make a new DemoPeer from a RainwayPeer.
 function makePeer(peer: RainwayPeer): DemoPeer {
-  return { peer, peerId: peer.peerId, chatHistory: [], streamStopCount: 0 };
+  return {
+    peer,
+    peerId: peer.peerId,
+    chatHistory: [],
+    streamStopCount: 0,
+    announcements: [],
+  };
 }
 
 /// The main application component, which manages a list of DemoPeers and
@@ -33,15 +41,26 @@ export const Demo = () => {
   const [apiKey, setApiKey] = useLocalStorage("api-key", "");
   const [connectingRuntime, setConnectingRuntime] = useState(false);
   const [runtime, setRuntime] = useState<RainwayRuntime | undefined>();
-  const [peers, setPeers] = useState<DemoPeer[]>([
-    // { peerId: BigInt(123), peer: undefined, chatHistory: [] },
-  ]);
+  const [peers, setPeers] = useState<DemoPeer[]>([]);
 
   function addChat(peer: RainwayPeer, chat: Chat) {
     setPeers((ps) =>
       ps.map((p) =>
         p.peerId === peer.peerId
           ? { ...p, chatHistory: [...p.chatHistory, chat] }
+          : p,
+      ),
+    );
+  }
+
+  function addAnnouncement(
+    peer: RainwayPeer,
+    announcement: RainwayStreamAnnouncement,
+  ) {
+    setPeers((ps) =>
+      ps.map((p) =>
+        p.peerId === peer.peerId
+          ? { ...p, announcements: [...p.announcements, announcement] }
           : p,
       ),
     );
@@ -109,6 +128,7 @@ export const Demo = () => {
             }
           },
           onStreamAnnouncement: (rt, peer, announcement) => {
+            addAnnouncement(peer, announcement);
             // When a stream is initiated remotely... (TODO).
           },
           onStreamStop: (rt, stream) => {
@@ -174,6 +194,7 @@ export const Demo = () => {
           peer={p.peer}
           peerId={p.peerId}
           chatHistory={p.chatHistory}
+          announcements={p.announcements}
           sendChat={(message) => {
             if (p.peer) {
               addChat(p.peer, { type: "outgoing", message });
@@ -210,7 +231,12 @@ export const Demo = () => {
               setConnecting(true);
               const peer = await runtime?.connect(BigInt(peerId));
               if (peer) {
-                peer.createDataChannel("Message", RainwayChannelMode.Reliable);
+                await peer.createDataChannel(
+                  "Message",
+                  RainwayChannelMode.Reliable,
+                );
+
+                await peer.listStreams();
                 setConnectError("");
               }
             } catch (e) {

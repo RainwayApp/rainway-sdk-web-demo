@@ -1,13 +1,20 @@
-import { InputLevel, RainwayPeer, RainwayStream } from "rainway-sdk";
+import {
+  InputLevel,
+  RainwayPeer,
+  RainwayStream,
+  RainwayStreamAnnouncement,
+} from "rainway-sdk";
 import React, { useEffect, useState } from "react";
 import { Rainway } from "rainway-react";
 import { SendArrow } from "./icons/SendArrow";
 import { Chat } from "shared";
+import { StreamSelector } from "./StreamSelector";
 
 export interface WidgetProps {
   peerId: bigint;
   chatHistory: Chat[];
   peer: RainwayPeer | undefined;
+  announcements: RainwayStreamAnnouncement[];
   sendChat: (message: string) => void;
   disconnect: () => void;
   streamStopCount: number;
@@ -85,6 +92,15 @@ export const Widget = (props: WidgetProps) => {
         >
           {stream ? "Leave Stream" : "Request Stream"}
         </button>
+        <StreamSelector
+          announcements={props.announcements}
+          onChosen={async (announcement) => {
+            const stream = await announcement.join();
+
+            console.log(`Joining stream ${stream.streamId}`);
+            setStream(stream);
+          }}
+        />
       </div>
       <div className="widget-body">
         <div className="stream-column m-r-16">
