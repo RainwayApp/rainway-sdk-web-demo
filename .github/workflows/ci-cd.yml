@@ -72,7 +72,7 @@ jobs:
         if: ${{ !env.ACT && github.ref == 'refs/heads/beta' }}
         run: cp -R public/ gh_pages_root/beta/ &&
           rm -rf gh_pages_root/.git &&
-          rm -rf public/
+          rm -rf public/ &&
           mv gh_pages_root/ public/
 
       # Shuffle around the directory structure so public contains the full layout (from master)
