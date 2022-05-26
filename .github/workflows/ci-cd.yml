@@ -62,7 +62,7 @@ jobs:
 
       # Clone gh-pages into gh_pages_root
       - uses: actions/checkout@v2
-        if: ${{ !env.ACT && github.ref == 'refs/heads/beta' }}
+        if: ${{ !env.ACT && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') }}
         with:
           ref: gh-pages
           path: gh_pages_root
