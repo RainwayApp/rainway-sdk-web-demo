@@ -97,7 +97,6 @@ export const Widget = (props: WidgetProps) => {
           onChosen={async (announcement) => {
             const stream = await announcement.join();
 
-            console.log(`Joining stream ${stream.streamId}`);
             setStream(stream);
           }}
         />
