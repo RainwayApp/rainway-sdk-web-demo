@@ -129,7 +129,6 @@ export const Demo = () => {
           },
           onStreamAnnouncement: (rt, peer, announcement) => {
             addAnnouncement(peer, announcement);
-            // When a stream is initiated remotely... (TODO).
           },
           onStreamStop: (rt, stream) => {
             // When a stream is stopped, increment that DemoPeer's
