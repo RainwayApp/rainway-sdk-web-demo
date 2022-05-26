@@ -629,6 +629,13 @@ button.chat-send-button:disabled {
   cursor: inherit;
   filter: grayscale();
 }
+.stream-selector {
+  display: flex;
+}
+
+.stream-selector > select {
+  margin-right: 8px;
+}
 
 .stream-wrapper {
   border: 1px solid rgba(0, 0, 0, 0.4);

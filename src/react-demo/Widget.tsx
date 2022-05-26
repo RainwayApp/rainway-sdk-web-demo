@@ -1,13 +1,20 @@
-import { InputLevel, RainwayPeer, RainwayStream } from "rainway-sdk";
+import {
+  InputLevel,
+  RainwayPeer,
+  RainwayStream,
+  RainwayStreamAnnouncement,
+} from "rainway-sdk";
 import React, { useEffect, useState } from "react";
 import { Rainway } from "rainway-react";
 import { SendArrow } from "./icons/SendArrow";
 import { Chat } from "shared";
+import { StreamSelector } from "./StreamSelector";
 
 export interface WidgetProps {
   peerId: bigint;
   chatHistory: Chat[];
   peer: RainwayPeer | undefined;
+  announcements: RainwayStreamAnnouncement[];
   sendChat: (message: string) => void;
   disconnect: () => void;
   streamStopCount: number;
@@ -52,6 +59,13 @@ export const Widget = (props: WidgetProps) => {
 
   return (
     <div className="card widget">
+      <div style={{ width: 110, marginBottom: "8px" }}>
+        {offline ? (
+          <div className="badge">Disconnected</div>
+        ) : (
+          <div className="badge ok">Connected</div>
+        )}
+      </div>
       <div className="card-top">
         <h2>
           <label htmlFor="peerId">Peer ID</label>
@@ -63,13 +77,6 @@ export const Widget = (props: WidgetProps) => {
           value={props.peerId.toString()}
           disabled={true}
         />
-        <div style={{ width: 110 }}>
-          {offline ? (
-            <div className="badge">Disconnected</div>
-          ) : (
-            <div className="badge ok">Connected</div>
-          )}
-        </div>
         <button onClick={() => props.disconnect()}>
           {offline ? "Close" : "Disconnect"}
         </button>
@@ -83,8 +90,16 @@ export const Widget = (props: WidgetProps) => {
           disabled={!props.peer || requestingStream}
           onClick={() => toggleStream()}
         >
-          {stream ? "Leave Stream" : "Request Stream"}
+          {stream ? "Leave Stream" : "Request New Stream"}
         </button>
+        <StreamSelector
+          announcements={props.announcements}
+          onChosen={async (announcement) => {
+            const stream = await announcement.join();
+
+            setStream(stream);
+          }}
+        />
       </div>
       <div className="widget-body">
         <div className="stream-column m-r-16">
