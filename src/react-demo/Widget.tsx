@@ -59,6 +59,13 @@ export const Widget = (props: WidgetProps) => {
 
   return (
     <div className="card widget">
+      <div style={{ width: 110, marginBottom: "8px" }}>
+        {offline ? (
+          <div className="badge">Disconnected</div>
+        ) : (
+          <div className="badge ok">Connected</div>
+        )}
+      </div>
       <div className="card-top">
         <h2>
           <label htmlFor="peerId">Peer ID</label>
@@ -70,13 +77,6 @@ export const Widget = (props: WidgetProps) => {
           value={props.peerId.toString()}
           disabled={true}
         />
-        <div style={{ width: 110 }}>
-          {offline ? (
-            <div className="badge">Disconnected</div>
-          ) : (
-            <div className="badge ok">Connected</div>
-          )}
-        </div>
         <button onClick={() => props.disconnect()}>
           {offline ? "Close" : "Disconnect"}
         </button>
@@ -90,7 +90,7 @@ export const Widget = (props: WidgetProps) => {
           disabled={!props.peer || requestingStream}
           onClick={() => toggleStream()}
         >
-          {stream ? "Leave Stream" : "Request Stream"}
+          {stream ? "Leave Stream" : "Request New Stream"}
         </button>
         <StreamSelector
           announcements={props.announcements}
