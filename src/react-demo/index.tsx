@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
 import "../style.css";
 import { Demo } from "./Demo";

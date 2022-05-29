@@ -1,7 +1,7 @@
 import {
   InputLevel,
-  RainwayPeer,
-  RainwayStream,
+  Peer,
+  Stream,
   RainwayStreamAnnouncement,
 } from "@rainway/web";
 import React, { useEffect, useState } from "react";
@@ -13,7 +13,7 @@ import { StreamSelector } from "./StreamSelector";
 export interface WidgetProps {
   peerId: bigint;
   chatHistory: Chat[];
-  peer: RainwayPeer | undefined;
+  peer: Peer | undefined;
   announcements: RainwayStreamAnnouncement[];
   sendChat: (message: string) => void;
   disconnect: () => void;
@@ -32,7 +32,7 @@ export const Widget = (props: WidgetProps) => {
   };
 
   const [requestingStream, setRequestingStream] = useState(false);
-  const [stream, setStream] = useState<RainwayStream | undefined>();
+  const [stream, setStream] = useState<Stream | undefined>();
   const toggleStream = async () => {
     if (stream) {
       stream.leave();
