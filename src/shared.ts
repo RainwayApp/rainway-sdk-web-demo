@@ -8,14 +8,24 @@ export const isDesktopSafari =
   !/Chrome|Android/i.test(navigator.userAgent);
 
 export const consoleLog = (level: LogLevel, message: string): void => {
-  if (level >= LogLevel.Error) {
-    console.error(message);
-  } else if (level >= LogLevel.Warning) {
-    console.warn(message);
-  } else if (level >= LogLevel.Info) {
-    console.info(message);
-  } else {
-    console.log(`[${LogLevel[level]}] ${message}`);
+  switch (level) {
+    case LogLevel.Debug:
+      console.debug(message);
+      break;
+    case LogLevel.Error:
+      console.error(message);
+      break;
+    case LogLevel.Info:
+      console.info(message);
+      break;
+    case LogLevel.Trace:
+      console.trace(message);
+      break;
+    case LogLevel.Warning:
+      console.warn(message);
+      break;
+    default:
+      console.log(`${LogLevel[level]} ${message}`);
   }
 };
 

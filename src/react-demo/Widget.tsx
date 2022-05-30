@@ -1,7 +1,7 @@
 import {
   InputLevel,
   Peer,
-  Stream,
+  InboundStream,
   RainwayStreamAnnouncement,
 } from "@rainway/web";
 import React, { useEffect, useState } from "react";
@@ -32,7 +32,7 @@ export const Widget = (props: WidgetProps) => {
   };
 
   const [requestingStream, setRequestingStream] = useState(false);
-  const [stream, setStream] = useState<Stream | undefined>();
+  const [stream, setStream] = useState<InboundStream>();
   const toggleStream = async () => {
     if (stream) {
       stream.leave();
@@ -41,9 +41,10 @@ export const Widget = (props: WidgetProps) => {
     }
     try {
       setRequestingStream(true);
-      const result = await props.peer?.requestStream(
-        InputLevel.Gamepad | InputLevel.Mouse | InputLevel.Keyboard,
-      );
+      const result = await props.peer?.createStream({
+        permissions:
+          InputLevel.Gamepad | InputLevel.Mouse | InputLevel.Keyboard,
+      });
       setStream(result);
     } catch (e) {
       console.log(e);

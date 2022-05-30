@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import React, { useState } from "react";
 import "../style.css";
 import { useLocalStorage } from "./util";
 
 import rainway, {
+  DataChannel,
   DataChannelMode,
+  LogLevel,
   Peer,
   PeerState,
   RainwayConnection,
@@ -27,7 +28,7 @@ interface DemoPeer {
 function makePeer(peer: Peer): DemoPeer {
   return {
     peer,
-    peerId: peer.peerId,
+    peerId: peer.id,
     chatHistory: [],
     streamStopCount: 0,
     announcements: [],
@@ -45,7 +46,7 @@ export const Demo = () => {
   function addChat(peer: Peer, chat: Chat) {
     setPeers((ps) =>
       ps.map((p) =>
-        p.peerId === peer.peerId
+        p.peerId === peer.id
           ? { ...p, chatHistory: [...p.chatHistory, chat] }
           : p,
       ),
@@ -58,7 +59,7 @@ export const Demo = () => {
   ) {
     setPeers((ps) =>
       ps.map((p) =>
-        p.peerId === peer.peerId
+        p.peerId === peer.id
           ? { ...p, announcements: [...p.announcements, announcement] }
           : p,
       ),
@@ -70,82 +71,69 @@ export const Demo = () => {
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState("");
 
+  const setupChannelHandlers = (channel: DataChannel) => {
+    channel.addEventListener("message", (data) => {
+      // Rainway offers arbitrary peer-to-peer data channel communication.
+      // In our demo apps, we simply interpret the bytestreams as UTF-8
+      // "chat messages" and display them in the right widget:
+      const chat: Chat = {
+        type: "incoming",
+        message: new TextDecoder().decode(data),
+      };
+      addChat(channel.peer, chat);
+    });
+  };
+
+  const setupPeerHandlers = (peer: Peer) => {
+    peer.addEventListener("close", () => {
+      // When a peer connection is lost, remove a DemoPeer/widget.
+      setPeers((ps) =>
+        ps.map((p) => (p.peerId === peer.id ? { ...p, peer: undefined } : p)),
+      );
+    });
+
+    peer.addEventListener("datachannel", (channel) => {
+      setupChannelHandlers(channel);
+    });
+
+    peer.addEventListener("stream-announcement", (announcement) => {
+      addAnnouncement(peer, announcement);
+    });
+  };
+
   const connectToRainway = async (): Promise<void> => {
     // Make and attach the Rainway client.
     if (!runtime) {
       setConnectingRuntime(true);
       try {
-        // TODO(bengreenier): Add log sink
+        // forward all rainway logs to `console.log`
+        rainway.addEventListener("log", (level, target, message) => {
+          consoleLog(level, `${target}: ${message}`);
+        });
 
-        let rt = await RainwayConnection.initialize({
+        let conn = await rainway.connect({
           apiKey,
           externalId: "web-demo-react",
         });
 
-        rt.addEventListener("close", (err) => {
+        conn.addEventListener("close", (err) => {
           // if the rainway connection closes, something is wrong
           console.error(`Lost connection to Rainway: ${err}`);
         });
 
-        rt.addEventListener("peer", async (req) => {
+        conn.addEventListener("peer-request", async (req) => {
           // Accept all requests to connect to us, since we're a demo app
           const peer = await req.accept();
 
-          peer.addEventListener("connectionstatechanged", (state) => {
-            // log all peer state changes
-            console.log(
-              `Peer ${peer.peerId} changed state to ${PeerState[state]}`,
-            );
+          const found = peers.find((p) => p.peerId === peer.id);
+          if (!found) {
+            setPeers((ps) => [...ps, makePeer(peer)]);
+          }
 
-            if (state == PeerState.New) {
-              // When a peer connection is established, add a DemoPeer/widget.
-              const found = peers.find((p) => p.peerId === peer.peerId);
-              if (!found) {
-                setPeers((ps) => [...ps, makePeer(peer)]);
-              }
-            }
-            // when the peer connection dies (either failure to establish or disconnected due to network topology change)
-            else if (state == PeerState.Failed) {
-              // When a peer connection is lost, remove a DemoPeer/widget.
-              setPeers((ps) =>
-                ps.map((p) =>
-                  p.peerId === peer.peerId ? { ...p, peer: undefined } : p,
-                ),
-              );
-            }
-          });
-
-          peer.addEventListener("datachannel", (channel) => {
-            channel.addEventListener("message", (data) => {
-              // Rainway offers arbitrary peer-to-peer data channel communication.
-              // In our demo apps, we simply interpret the bytestreams as UTF-8
-              // "chat messages" and display them in the right widget:
-              const chat: Chat = {
-                type: "incoming",
-                message: new TextDecoder().decode(data),
-              };
-              addChat(peer, chat);
-            });
-          });
-
-          peer.addEventListener("stream", (announcement) => {
-            addAnnouncement(peer, announcement);
-          });
-
-          // TODO(bengreenier): Get stream and setup stop handler
-          // // When a stream is stopped, increment that DemoPeer's
-          //   // "streamStopCount". A `useEffect` in the Widget listens for such
-          //   // increments and kills the stream state.
-          //   setPeers((ps) =>
-          //     ps.map((p) =>
-          //       [...(p.peer?.streams.values() ?? [])].some((s) => s === stream)
-          //         ? { ...p, streamStopCount: p.streamStopCount + 1 }
-          //         : p,
-          //     ),
-          //   );
+          setupPeerHandlers(peer);
         });
 
-        setRuntime(rt);
+        setRuntime(conn);
       } finally {
         setConnectingRuntime(false);
       }
@@ -193,11 +181,11 @@ export const Demo = () => {
           sendChat={(message) => {
             if (p.peer) {
               addChat(p.peer, { type: "outgoing", message });
-              p.peer.send("Message", new TextEncoder().encode(message));
+              p.peer.dataChannels.get("Message")?.send(message);
             }
           }}
           disconnect={() => {
-            p.peer?.disconnect();
+            p.peer?.close();
             setPeers((ps) => ps.filter((x) => x.peerId !== p.peerId));
           }}
           streamStopCount={p.streamStopCount}
@@ -225,13 +213,23 @@ export const Demo = () => {
             try {
               setConnecting(true);
               const peer = await runtime?.connect(BigInt(peerId));
+
               if (peer) {
-                await peer.createDataChannel({
-                  label: "Message",
+                const found = peers.find((p) => p.peerId === peer.id);
+                if (!found) {
+                  setPeers((ps) => [...ps, makePeer(peer)]);
+                }
+
+                setupPeerHandlers(peer);
+
+                const channel = await peer.createDataChannel({
+                  id: "Message",
                   mode: DataChannelMode.Reliable,
                 });
 
-                await peer.listStreams();
+                setupChannelHandlers(channel);
+
+                await peer.forceStreamAnnouncements();
                 setConnectError("");
               }
             } catch (e) {
