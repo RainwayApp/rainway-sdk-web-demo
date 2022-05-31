@@ -9,7 +9,7 @@ import "webpack-dev-server";
 
 const sdkVersion = JSON.parse(
   fs.readFileSync(
-    path.join(__dirname, "node_modules", "rainway-sdk", "package.json"),
+    path.join(__dirname, "node_modules", "@rainway", "web", "package.json"),
     { encoding: "utf-8" },
   ),
 ).version;

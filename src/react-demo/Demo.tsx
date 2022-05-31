@@ -10,7 +10,7 @@ import {
   RainwayChannelMode,
   RainwayPeerState,
   RainwayStreamAnnouncement,
-} from "rainway-sdk";
+} from "@rainway/web";
 
 import { Chat, consoleLog } from "../shared";
 import { Widget } from "./Widget";
