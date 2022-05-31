@@ -3,11 +3,13 @@ on:
   pull_request:
     branches:
       - master
+      - beta
   push:
     branches:
       - master
+      - beta
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -15,63 +17,78 @@ jobs:
   ci_cd:
     runs-on: ubuntu-latest
     steps:
-    # Act images won't have git which webpack shells out to during build
-    # To work around this, we install this if we're in the ACT environment
-    - name: Local-only setup
-      if: ${{ env.ACT }}
-      run: apt-get update && apt-get install -y git
+      # Act images won't have git which webpack shells out to during build
+      # To work around this, we install this if we're in the ACT environment
+      - name: Local-only setup
+        if: ${{ env.ACT }}
+        run: apt-get update && apt-get install -y git
 
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: 16.x
-    
-    - name: Build
-      run: npm ci && npm run build
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
 
-     # Locally we debug the build output
-    - name: List public (local only)
-      if: ${{ env.ACT }}
-      run: ls -alR public
+      - name: Build
+        run: npm ci && npm run build
 
-    - name: Parse git commit
-      if: ${{ github.ref == 'refs/heads/master' }}
-      run: echo GH_REL_TAG=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/v0-\1/") >> $GITHUB_ENV
+        # Locally we debug the build output
+      - name: List public (local only)
+        if: ${{ env.ACT }}
+        run: ls -alR public
 
-    # Remotely we create and push the tag
-    - name: Create Release Tag
-      run: git tag ${{ env.GH_REL_TAG }} && git push origin ${{ env.GH_REL_TAG }}
-      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
+      - name: Parse git commit
+        if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' }}
+        run: echo GH_REL_TAG=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/v0-\1/") >> $GITHUB_ENV
 
-    # Locally we debug the tag parse
-    - run: echo ${{ env.GH_REL_TAG }}
-      if: ${{ env.ACT && github.ref == 'refs/heads/master'  }}
+      # Remotely we create and push the tag
+      - name: Create Release Tag
+        run: git tag ${{ env.GH_REL_TAG }} && git push origin ${{ env.GH_REL_TAG }}
+        if: ${{ !env.ACT && github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' }}
 
-    - name: Package Public
-      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
-      run: |
-        mkdir rel
-        zip rel/web-demo-${{ env.GH_REL_TAG }}.zip -r public &&
-        echo "Packaged."
+      # Locally we debug the tag parse
+      - run: echo ${{ env.GH_REL_TAG }}
+        if: ${{ env.ACT && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta')  }}
 
-    # Remotely we create the release from the tag
-    - name: GH Release
-      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
-      uses: softprops/action-gh-release@v0.1.14
-      with:
-        tag_name: ${{ env.GH_REL_TAG }}
-        generate_release_notes: true
-        files: rel/*.zip
+      - name: Package Public
+        if: ${{ !env.ACT && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') }}
+        run: |
+          mkdir rel
+          zip rel/web-demo-${{ env.GH_REL_TAG }}.zip -r public &&
+          echo "Packaged."
 
-    - name: Deploy to GitHub Pages
-      if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
-      uses: Cecilapp/GitHub-Pages-deploy@v3
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        email: ci@rainway.com
-        build_dir: public/
-        cname: webdemo.rainway.com
-        jekyll: no
+      # If we're on beta, we want to make the build a subdir of the gh-pages site
+
+      # Clone gh-pages into gh_pages_root
+      - uses: actions/checkout@v2
+        if: ${{ !env.ACT && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') }}
+        with:
+          ref: gh-pages
+          path: gh_pages_root
+
+      # Shuffle around the directory structure so public contains the full layout (from beta)
+      - name: Create beta directory on gh-pages
+        if: ${{ !env.ACT && github.ref == 'refs/heads/beta' }}
+        run: rm -rf gh_pages_root/beta/ &&
+          cp -R public/ gh_pages_root/beta/ &&
+          rm -rf gh_pages_root/.git &&
+          rm -rf public/ &&
+          mv gh_pages_root/ public/
+
+      # Shuffle around the directory structure so public contains the full layout (from master)
+      - name: Persist beta directory on gh-pages
+        if: ${{ !env.ACT && github.ref == 'refs/heads/master' }}
+        run: cp -R gh_pages_root/beta/ public/ &&
+          rm -rf gh_pages_root
+
+      - name: Deploy to GitHub Pages
+        if: ${{ !env.ACT && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') }}
+        uses: Cecilapp/GitHub-Pages-deploy@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          email: ci@rainway.com
+          build_dir: public/
+          cname: webdemo.rainway.com
+          jekyll: no
