@@ -1,4 +1,4 @@
-import { InputLevel, RainwayLogLevel } from "rainway-sdk";
+import { InputLevel, RainwayLogLevel } from "@rainway/web";
 
 export const allInput =
   InputLevel.Keyboard | InputLevel.Mouse | InputLevel.Gamepad;

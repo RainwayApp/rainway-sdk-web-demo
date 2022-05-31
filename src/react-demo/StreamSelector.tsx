@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { RainwayStreamAnnouncement } from "rainway-sdk";
+import { RainwayStreamAnnouncement } from "@rainway/web";
 
 interface Props {
   announcements: RainwayStreamAnnouncement[];

@@ -1,4 +1,4 @@
-import { RainwayRuntime } from "rainway-sdk";
+import { RainwayRuntime } from "@rainway/web";
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import "../style.css";

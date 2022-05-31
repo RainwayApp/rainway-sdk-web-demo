@@ -3,9 +3,9 @@ import {
   RainwayPeer,
   RainwayStream,
   RainwayStreamAnnouncement,
-} from "rainway-sdk";
+} from "@rainway/web";
 import React, { useEffect, useState } from "react";
-import { Rainway } from "rainway-react";
+import { Rainway } from "@rainway/react";
 import { SendArrow } from "./icons/SendArrow";
 import { Chat } from "shared";
 import { StreamSelector } from "./StreamSelector";
