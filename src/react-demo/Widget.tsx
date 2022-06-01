@@ -1,7 +1,7 @@
 import {
   InputLevel,
-  RainwayPeer,
-  RainwayStream,
+  Peer,
+  InboundStream,
   RainwayStreamAnnouncement,
 } from "@rainway/web";
 import React, { useEffect, useState } from "react";
@@ -13,7 +13,7 @@ import { StreamSelector } from "./StreamSelector";
 export interface WidgetProps {
   peerId: bigint;
   chatHistory: Chat[];
-  peer: RainwayPeer | undefined;
+  peer: Peer | undefined;
   announcements: RainwayStreamAnnouncement[];
   sendChat: (message: string) => void;
   disconnect: () => void;
@@ -32,18 +32,19 @@ export const Widget = (props: WidgetProps) => {
   };
 
   const [requestingStream, setRequestingStream] = useState(false);
-  const [stream, setStream] = useState<RainwayStream | undefined>();
+  const [stream, setStream] = useState<InboundStream>();
   const toggleStream = async () => {
     if (stream) {
-      stream.leave();
+      stream.close();
       setStream(undefined);
       return;
     }
     try {
       setRequestingStream(true);
-      const result = await props.peer?.requestStream(
-        InputLevel.Gamepad | InputLevel.Mouse | InputLevel.Keyboard,
-      );
+      const result = await props.peer?.createStream({
+        permissions:
+          InputLevel.Gamepad | InputLevel.Mouse | InputLevel.Keyboard,
+      });
       setStream(result);
     } catch (e) {
       console.log(e);
@@ -53,7 +54,7 @@ export const Widget = (props: WidgetProps) => {
   };
 
   useEffect(() => {
-    stream?.leave();
+    stream?.close();
     setStream(undefined);
   }, [props.streamStopCount]);
 
