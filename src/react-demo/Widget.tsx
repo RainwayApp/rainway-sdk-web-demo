@@ -35,7 +35,7 @@ export const Widget = (props: WidgetProps) => {
   const [stream, setStream] = useState<InboundStream>();
   const toggleStream = async () => {
     if (stream) {
-      stream.leave();
+      stream.close();
       setStream(undefined);
       return;
     }
@@ -54,7 +54,7 @@ export const Widget = (props: WidgetProps) => {
   };
 
   useEffect(() => {
-    stream?.leave();
+    stream?.close();
     setStream(undefined);
   }, [props.streamStopCount]);
 
