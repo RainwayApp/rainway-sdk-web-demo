@@ -13,8 +13,8 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@rainway/react": "^0.4.0-beta.1",
-    "@rainway/web": "^0.4.0-beta.2",
+    "@rainway/react": "^0.4.0-beta.3",
+    "@rainway/web": "^0.4.0-beta.3",
     "@rehooks/local-storage": "^2.4.4",
     "autobind-decorator": "^2.4.0",
     "copy-webpack-plugin": "^10.2.4",
