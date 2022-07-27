@@ -1,38 +1,34 @@
-import { RainwayRuntime } from "@rainway/web";
+import rainway, { PeerState, RainwayConnection } from "@rainway/web";
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import "../style.css";
 import useAsyncEffect from "use-async-effect";
 
 const QuickDemo = () => {
-  const [runtime, setRuntime] = useState<RainwayRuntime | undefined>();
+  const [runtime, setRuntime] = useState<RainwayConnection>();
   const [error, setError] = useState<string>("");
-  useAsyncEffect(async (isAlive) => {
+  useAsyncEffect(async () => {
     try {
-      const rt = await RainwayRuntime.initialize({
+      let rt = await rainway.connect({
         apiKey:
           new URLSearchParams(window.location.search).get("api_key") ?? "",
-        externalId: "web-demo-quick",
-        onRuntimeConnectionLost: (rt, error) => {
-          setRuntime(undefined);
-        },
-        onConnectionRequest: (rt, request) => {
-          request.accept();
-        },
-        onPeerMessage: () => {},
-        onPeerDataChannel: () => {},
-        onPeerError: (rt, peer, error) => {
-          console.warn("onPeerError", peer, error);
-        },
-        onPeerStateChange: (rt, peer, state) => {
-          console.log(`Peer ${peer.peerId} changed states to ${state}`);
-        },
-        onStreamAnnouncement: () => {},
-        onStreamStop: () => {},
-        logSink: () => {},
+        externalId: "web-demo-react",
       });
-      if (!isAlive()) return;
-      setRuntime(rt);
+
+      rt.addEventListener("close", (err) => {
+        // if the rainway connection closes, something is wrong
+        console.error(`Lost connection to Rainway: ${err}`);
+      });
+
+      rt.addEventListener("peer-request", async (req) => {
+        // Accept all requests to connect to us, since we're a demo app
+        const peer = await req.accept();
+
+        peer.addEventListener("connection-state-change", (state) => {
+          // log all peer state changes
+          console.log(`Peer ${peer.id} changed state to ${PeerState[state]}`);
+        });
+      });
     } catch (e) {
       setError((e as Error).message);
       console.log(e);
