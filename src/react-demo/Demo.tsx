@@ -72,7 +72,8 @@ export const Demo = () => {
   const [connectError, setConnectError] = useState("");
 
   const setupChannelHandlers = (channel: DataChannel) => {
-    channel.addEventListener("message", (data) => {
+    channel.addEventListener("message", (msg) => {
+      const { data } = msg;
       // Rainway offers arbitrary peer-to-peer data channel communication.
       // In our demo apps, we simply interpret the bytestreams as UTF-8
       // "chat messages" and display them in the right widget:
